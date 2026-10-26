@@ -1,14 +1,16 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { Grave, Eulogy, Friend } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
-import { pressF, dropEulogy, unpressF, deleteEulogy, deleteGrave } from '../services/graveService';
+import { pressF, dropEulogy, unpressF, deleteEulogy, deleteGrave, updateResurrectionStatus } from '../services/graveService';
 import { shareGraveWithFriend } from '../services/userService';
 import { useAuth } from '../contexts/AuthContext';
-import { Loader2, Share2, Trash2, Image as ImageIcon } from 'lucide-react';
+import { calculateGraveScore, getGraveTier } from '../services/graveScoreService';
+import { Loader2, Share2, Trash2, Image as ImageIcon, Sparkles, Zap, X } from 'lucide-react';
 import { db } from '../firebase';
 import { collection, onSnapshot, getDoc, doc } from 'firebase/firestore';
 import { Link } from 'react-router-dom';
 import { ShareCardModal } from './ShareCardModal';
+import { SocialPostModal } from './SocialPostModal';
 
 interface GraveModalProps {
   grave: Grave;
@@ -36,6 +38,23 @@ export const GraveModal: React.FC<GraveModalProps> = ({ grave, onClose }) => {
   );
 
   const [showShareCard, setShowShareCard] = useState(false);
+  const [showSocialModal, setShowSocialModal] = useState(false);
+
+  const [isResurrected, setIsResurrected] = useState<boolean>(grave.is_resurrected || false);
+  const [resurrectionNote, setResurrectionNote] = useState<string>(grave.resurrection_note || '');
+  const [isEditingResurrection, setIsEditingResurrection] = useState(false);
+  const [editResurrected, setEditResurrected] = useState<boolean>(grave.is_resurrected || false);
+  const [editNote, setEditNote] = useState<string>(grave.resurrection_note || '');
+  const [resurrectionSaving, setResurrectionSaving] = useState(false);
+
+  const currentGraveState = useMemo(() => ({
+    ...grave,
+    respects,
+    eulogies
+  }), [grave, respects, eulogies]);
+
+  const graveScore = useMemo(() => calculateGraveScore(currentGraveState), [currentGraveState]);
+  const graveTier = useMemo(() => getGraveTier(graveScore), [graveScore]);
 
   useEffect(() => {
     document.body.style.overflow = 'hidden';
@@ -199,6 +218,22 @@ export const GraveModal: React.FC<GraveModalProps> = ({ grave, onClose }) => {
     }
   };
 
+  const handleSaveResurrection = async () => {
+    setResurrectionSaving(true);
+    try {
+      await updateResurrectionStatus(grave.id, editResurrected, editNote);
+      setIsResurrected(editResurrected);
+      setResurrectionNote(editNote);
+      grave.is_resurrected = editResurrected;
+      grave.resurrection_note = editNote;
+      setIsEditingResurrection(false);
+    } catch (err) {
+      console.error("Failed to update resurrection status", err);
+    } finally {
+      setResurrectionSaving(false);
+    }
+  };
+
   return (
     <>
       <AnimatePresence>
@@ -209,6 +244,15 @@ export const GraveModal: React.FC<GraveModalProps> = ({ grave, onClose }) => {
              eulogiesCount={eulogies.length}
              graveOwnerUsername={graveOwnerUsername}
              onClose={() => setShowShareCard(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showSocialModal && (
+          <SocialPostModal 
+             grave={grave}
+             onClose={() => setShowSocialModal(false)}
           />
         )}
       </AnimatePresence>
@@ -234,6 +278,14 @@ export const GraveModal: React.FC<GraveModalProps> = ({ grave, onClose }) => {
         className="relative w-full max-w-lg bg-zinc-950/95 backdrop-blur-2xl border border-zinc-800 rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.8)] p-5 md:p-6 flex flex-col items-center text-center gap-3 overflow-hidden selection:bg-[#c53030]/20 selection:text-[#c53030] ring-1 ring-white/5 max-h-[90vh] overflow-y-auto custom-scrollbar"
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Quick Close Button */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 p-1.5 text-zinc-400 hover:text-white hover:bg-white/10 rounded-full transition-colors z-20 border border-transparent hover:border-zinc-700/60 cursor-pointer"
+          aria-label="Close modal"
+        >
+          <X className="w-5 h-5" />
+        </button>
         
         {/* Ambient Glow */}
         <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[#c53030]/30 to-transparent opacity-50" />
@@ -241,8 +293,16 @@ export const GraveModal: React.FC<GraveModalProps> = ({ grave, onClose }) => {
 
         {/* Header */}
         <div className="relative z-10 flex flex-col items-center gap-2 w-full">
-          <div className="inline-block px-3 py-1 rounded-full border border-code-red/30 bg-code-red/10 text-code-red text-[10px] font-mono uppercase tracking-[0.2em] shadow-[0_0_15px_rgba(248,113,113,0.2)]">
-            {grave.cause_of_death}
+          <div className="flex items-center gap-2 flex-wrap justify-center">
+            <div className="inline-block px-3 py-1 rounded-full border border-code-red/30 bg-code-red/10 text-code-red text-[10px] font-mono uppercase tracking-[0.2em] shadow-[0_0_15px_rgba(248,113,113,0.2)]">
+              {grave.cause_of_death}
+            </div>
+            <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[10px] font-mono uppercase tracking-wider font-bold ${graveTier.badgeColor}`}>
+              <span>{graveTier.icon}</span>
+              <span>{graveTier.name}</span>
+              <span>•</span>
+              <span>{graveScore} PTS</span>
+            </div>
           </div>
           <h2 className="text-xl md:text-2xl font-bold text-white font-sans tracking-tight leading-tight drop-shadow-xl">
             {grave.project_name}
@@ -253,6 +313,123 @@ export const GraveModal: React.FC<GraveModalProps> = ({ grave, onClose }) => {
              </p>
           )}
         </div>
+
+        {/* Luminous Resurrected Banner */}
+        {isResurrected && (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="w-full bg-gradient-to-r from-emerald-950/80 via-emerald-900/40 to-emerald-950/80 border border-emerald-500/60 rounded-xl p-3 sm:p-3.5 flex flex-col gap-1.5 text-left shadow-[0_0_25px_rgba(16,185,129,0.3)] relative overflow-hidden backdrop-blur-md"
+          >
+            <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none" />
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="flex h-2.5 w-2.5 relative">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                </span>
+                <span className="text-xs sm:text-sm font-mono font-bold tracking-widest text-emerald-300 uppercase drop-shadow-[0_0_10px_rgba(52,211,153,0.5)] flex items-center gap-1.5">
+                  <Zap className="w-3.5 h-3.5 text-emerald-400" /> Under Active Resurrection
+                </span>
+              </div>
+              {user?.uid === grave.user_id && (
+                <button
+                  onClick={() => {
+                    setEditResurrected(isResurrected);
+                    setEditNote(resurrectionNote);
+                    setIsEditingResurrection(true);
+                  }}
+                  className="text-[11px] font-mono text-emerald-300 hover:text-white underline decoration-emerald-500/50 underline-offset-2 transition-colors cursor-pointer"
+                >
+                  Edit / Revoke
+                </button>
+              )}
+            </div>
+            {resurrectionNote && (
+              <p className="text-xs text-emerald-100/90 font-mono pl-3 border-l-2 border-emerald-500/50 italic mt-0.5">
+                "{resurrectionNote}"
+              </p>
+            )}
+          </motion.div>
+        )}
+
+        {/* Project Owner: Initiate Resurrection button if not yet resurrected */}
+        {user?.uid === grave.user_id && !isResurrected && !isEditingResurrection && (
+          <div className="w-full flex justify-center">
+            <button
+              onClick={() => {
+                setEditResurrected(true);
+                setEditNote(resurrectionNote);
+                setIsEditingResurrection(true);
+              }}
+              className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-950/40 border border-emerald-500/50 text-emerald-300 hover:bg-emerald-900/40 hover:border-emerald-400 hover:text-white transition-all text-xs font-mono tracking-wider cursor-pointer shadow-[0_0_15px_rgba(16,185,129,0.15)] group"
+            >
+              <Zap className="w-3.5 h-3.5 text-emerald-400 group-hover:scale-110 transition-transform" />
+              <span>Resurrect Project (Bring Back to Life)</span>
+            </button>
+          </div>
+        )}
+
+        {/* Owner Resurrection Protocol Editor */}
+        {isEditingResurrection && (
+          <motion.div 
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="w-full bg-zinc-900/95 border border-emerald-500/50 rounded-xl p-3.5 text-left flex flex-col gap-2.5 shadow-[0_0_30px_rgba(0,0,0,0.8)] relative z-20"
+          >
+            <div className="flex items-center justify-between border-b border-zinc-800 pb-2">
+              <div className="flex items-center gap-1.5 text-emerald-400 font-mono text-xs font-bold uppercase tracking-wider">
+                <Zap className="w-3.5 h-3.5" /> Resurrection Protocol Controls
+              </div>
+              <button 
+                onClick={() => setIsEditingResurrection(false)}
+                className="text-zinc-500 hover:text-zinc-300 text-xs font-mono"
+              >
+                ✕
+              </button>
+            </div>
+
+            <label className="flex items-center gap-2 cursor-pointer text-xs font-mono text-zinc-200 select-none">
+              <input 
+                type="checkbox" 
+                checked={editResurrected} 
+                onChange={(e) => setEditResurrected(e.target.checked)} 
+                className="accent-emerald-500 w-4 h-4 rounded cursor-pointer"
+              />
+              <span>Declare project as "Brought Back to Life" (Active Resurrection)</span>
+            </label>
+
+            <div className="flex flex-col gap-1">
+              <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider">
+                Resurrection Note / Roadmap (Optional):
+              </span>
+              <input 
+                type="text" 
+                value={editNote}
+                onChange={(e) => setEditNote(e.target.value)}
+                placeholder="e.g. Pivoting to a lightweight CLI with Rust & SQLite"
+                maxLength={150}
+                className="w-full bg-black/60 border border-zinc-700 rounded-lg px-3 py-2 text-xs text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-emerald-500/60 transition-colors"
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-1">
+              <button
+                onClick={() => setIsEditingResurrection(false)}
+                className="px-3 py-1.5 rounded-lg border border-zinc-700 bg-zinc-800/60 text-zinc-400 hover:text-zinc-200 text-xs font-mono uppercase tracking-wider transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveResurrection}
+                disabled={resurrectionSaving}
+                className="px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-zinc-950 font-bold text-xs font-mono uppercase tracking-wider transition-colors disabled:opacity-50 flex items-center gap-1.5 cursor-pointer shadow-[0_0_15px_rgba(16,185,129,0.3)]"
+              >
+                {resurrectionSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Save Status'}
+              </button>
+            </div>
+          </motion.div>
+        )}
 
         {/* Divider */}
         <div className="w-16 h-px bg-gradient-to-r from-transparent via-[#c53030]/50 to-transparent my-1" />
@@ -333,14 +510,14 @@ export const GraveModal: React.FC<GraveModalProps> = ({ grave, onClose }) => {
                     <div className="flex items-center gap-2">
                       <button 
                         onClick={handleDeleteGrave}
-                        className="px-3 py-1.5 rounded-full border border-red-900/50 bg-red-900/20 text-red-400 hover:bg-red-900/40 hover:text-red-300 transition-all text-xs font-mono uppercase tracking-widest cursor-pointer"
+                        className="px-3 py-1.5 rounded-full border border-red-500 bg-red-600 hover:bg-red-700 text-white transition-all text-xs font-mono font-bold uppercase tracking-widest cursor-pointer shadow-sm"
                         title="Confirm Delete"
                       >
                         Confirm
                       </button>
                       <button 
                         onClick={() => setIsConfirmingDelete(false)}
-                        className="px-3 py-1.5 rounded-full border border-zinc-700 bg-zinc-900/50 text-zinc-400 hover:bg-zinc-800 transition-all text-xs font-mono uppercase tracking-widest cursor-pointer"
+                        className="px-3 py-1.5 rounded-full border border-zinc-700 bg-zinc-800 text-zinc-200 hover:text-white hover:bg-zinc-700 transition-all text-xs font-mono uppercase tracking-widest cursor-pointer"
                         title="Cancel Delete"
                       >
                         Cancel
@@ -349,7 +526,7 @@ export const GraveModal: React.FC<GraveModalProps> = ({ grave, onClose }) => {
                   ) : (
                     <button 
                       onClick={() => setIsConfirmingDelete(true)}
-                      className="flex items-center justify-center p-2.5 rounded-full border border-zinc-700 bg-zinc-900/50 text-zinc-400 hover:text-red-400 hover:border-red-900/50 hover:bg-red-900/10 transition-all cursor-pointer"
+                      className="flex items-center justify-center p-2.5 rounded-full border border-zinc-700 bg-zinc-900 text-zinc-300 hover:text-red-400 hover:border-red-500 hover:bg-red-950/30 transition-all cursor-pointer shadow-sm"
                       title="Exhume Project (Delete)"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -358,45 +535,60 @@ export const GraveModal: React.FC<GraveModalProps> = ({ grave, onClose }) => {
                 )}
               </div>
               
-              {userProfile && (
-              <div className="relative">
+              <div className="flex items-center gap-2">
                 <button 
-                  onClick={() => setShowShare(!showShare)}
-                  className="flex items-center gap-2 px-3.5 py-2.5 rounded-full border border-zinc-700 bg-zinc-900/50 text-zinc-300 hover:text-[#c53030] hover:border-[#c53030]/50 hover:bg-[#c53030]/10 transition-all cursor-pointer"
+                  onClick={() => setShowSocialModal(true)}
+                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-full border border-sky-800/40 bg-sky-950/40 text-sky-300 hover:text-white hover:border-sky-400 hover:bg-sky-900/50 transition-all text-xs font-mono tracking-wider cursor-pointer shadow-[0_0_15px_rgba(14,165,233,0.15)]"
+                  title="Generate LinkedIn & Social Mistake Analysis"
                 >
-                  <Share2 className="w-4 h-4" />
+                  <Sparkles className="w-3.5 h-3.5 text-sky-400" />
+                  <span className="hidden sm:inline">LinkedIn Post</span>
+                  <span className="sm:hidden">LinkedIn</span>
                 </button>
-                {showShare && (
-                  <div className="absolute right-0 bottom-full mb-2 w-48 bg-zinc-950 border border-[#c53030]/30 rounded-xl shadow-xl overflow-hidden z-20 flex flex-col">
-                    <div className="p-2 border-b border-[#c53030]/20 text-[10px] font-mono tracking-widest text-[#c53030]/80 text-left">
-                      Share with Friend
+
+                {userProfile && (
+                <div className="relative">
+                  <button 
+                    onClick={() => setShowShare(!showShare)}
+                    className="flex items-center gap-2 px-3.5 py-2.5 rounded-full border border-zinc-700 bg-zinc-900/50 text-zinc-300 hover:text-[#c53030] hover:border-[#c53030]/50 hover:bg-[#c53030]/10 transition-all cursor-pointer"
+                  >
+                    <Share2 className="w-4 h-4" />
+                  </button>
+                  {showShare && (
+                    <div className="absolute right-0 bottom-full mb-2 w-48 bg-zinc-950 border border-[#c53030]/30 rounded-xl shadow-xl overflow-hidden z-20 flex flex-col">
+                      <div className="p-2 border-b border-[#c53030]/20 text-[10px] font-mono tracking-widest text-[#c53030]/80 text-left">
+                        Share with Friend
+                      </div>
+                      <div className="max-h-32 overflow-y-auto custom-scrollbar border-b border-[#c53030]/20">
+                        {friends.length === 0 ? (
+                          <div className="p-3 text-xs text-zinc-500 font-mono text-center">No friends yet.</div>
+                        ) : (
+                          friends.map(friend => (
+                            <button
+                              key={friend.uid}
+                              onClick={() => handleShare(friend.uid)}
+                              disabled={sharingTo === friend.uid}
+                              className="w-full text-left px-3 py-2 text-sm font-sans text-zinc-300 hover:text-white underline decoration-[#c53030] underline-offset-4 transition-colors flex items-center justify-between"
+                            >
+                              <span className="truncate">@{friend.username}</span>
+                              {sharingTo === friend.uid && <Loader2 className="w-3 h-3 animate-spin" />}
+                            </button>
+                          ))
+                        )}
+                      </div>
+                      <div className="flex flex-col border-t border-[#c53030]/20">
+                         <button onClick={() => { setShowShare(false); setShowSocialModal(true); }} className="w-full text-left px-3 py-2 text-sm font-sans text-sky-300 hover:bg-sky-950/40 hover:text-white transition-colors flex items-center gap-2 border-b border-[#c53030]/20">
+                           <Sparkles className="w-4 h-4 text-sky-400" /> LinkedIn Analysis
+                         </button>
+                         <button onClick={() => { setShowShare(false); setShowShareCard(true); }} className="w-full text-left px-3 py-2 text-sm font-sans text-zinc-300 hover:bg-[#c53030]/20 hover:text-white transition-colors flex items-center gap-2">
+                           <ImageIcon className="w-4 h-4" /> Memorial Share
+                         </button>
+                      </div>
                     </div>
-                    <div className="max-h-32 overflow-y-auto custom-scrollbar border-b border-[#c53030]/20">
-                      {friends.length === 0 ? (
-                        <div className="p-3 text-xs text-zinc-500 font-mono text-center">No friends yet.</div>
-                      ) : (
-                        friends.map(friend => (
-                          <button
-                            key={friend.uid}
-                            onClick={() => handleShare(friend.uid)}
-                            disabled={sharingTo === friend.uid}
-                            className="w-full text-left px-3 py-2 text-sm font-sans text-zinc-300 hover:text-white underline decoration-[#c53030] underline-offset-4 transition-colors flex items-center justify-between"
-                          >
-                            <span className="truncate">@{friend.username}</span>
-                            {sharingTo === friend.uid && <Loader2 className="w-3 h-3 animate-spin" />}
-                          </button>
-                        ))
-                      )}
-                    </div>
-                    <div className="flex flex-col border-t border-[#c53030]/20">
-                       <button onClick={() => { setShowShare(false); setShowShareCard(true); }} className="w-full text-left px-3 py-2 text-sm font-sans text-zinc-300 hover:bg-[#c53030]/20 hover:text-white transition-colors flex items-center gap-2">
-                         <ImageIcon className="w-4 h-4" /> Memorial Share
-                       </button>
-                    </div>
-                  </div>
-                )}
+                  )}
+                </div>
+              )}
               </div>
-            )}
             </div>
           </div>
           <div className="flex flex-col gap-2 text-left w-full max-h-[180px] overflow-y-auto custom-scrollbar pr-2">

@@ -6,6 +6,8 @@ export interface User {
   photoURL?: string;
   instagram?: string;
   whatsapp?: string;
+  github?: string;
+  bio?: string;
 }
 
 export interface FriendRequest {
@@ -56,9 +58,11 @@ export interface Grave {
   respects?: number;
   rips?: string[];
   eulogies?: Eulogy[];
+  is_resurrected?: boolean;
+  resurrection_note?: string;
 }
 
-export type GraveFormData = Omit<Grave, 'id' | 'created_at' | 'user_id' | 'user_name' | 'respects' | 'eulogies'>;
+export type GraveFormData = Omit<Grave, 'id' | 'created_at' | 'user_id' | 'user_name' | 'respects' | 'eulogies' | 'is_resurrected' | 'resurrection_note'>;
 
 export enum CauseOfDeath {
   LACK_OF_TIME = "Lack of Time",

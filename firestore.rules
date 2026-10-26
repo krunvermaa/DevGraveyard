@@ -1,0 +1,117 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Validation for Grave entity
+    function isValidGrave(data) {
+      return data.project_name is string && data.project_name.size() <= 100 &&
+             data.cause_of_death is string && data.cause_of_death.size() <= 100 &&
+             data.lesson_learned is string && data.lesson_learned.size() <= 1000 && (!data.keys().hasAny(["github_link"]) || (data.github_link is string && data.github_link.size() <= 500));
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['username']) &&
+             data.username is string && data.username.size() <= 30;
+    }
+
+    function isValidUsernameRegistry(data) {
+      return data.keys().hasAll(['uid']) && data.uid is string;
+    }
+
+    function isValidFriendRequest(data) {
+      return data.keys().hasAll(['fromUserId', 'fromUsername', 'toUserId', 'status', 'createdAt']) &&
+             data.fromUserId is string && data.toUserId is string &&
+             data.status in ['pending', 'accepted', 'rejected'];
+    }
+
+    function isValidFriend(data) {
+      return data.keys().hasAll(['username', 'addedAt']) && data.username is string;
+    }
+
+    function isValidSharedGrave(data) {
+      return data.keys().hasAll(['graveId', 'graveName', 'fromUserId', 'fromUsername', 'createdAt']) &&
+             data.graveId is string && data.fromUserId is string;
+    }
+
+    match /graves/{graveId} {
+      // Allow read to authenticated users
+      allow read: if isSignedIn();
+      // Allow create if user is signed in and provides valid grave data
+      allow create: if isSignedIn() && isValidGrave(incoming());
+      // Allow updates to respects or eulogies for signed in users
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn() && resource.data.user_id == request.auth.uid;
+    }
+
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && request.auth.uid == userId && isValidUser(incoming());
+      allow update: if isSignedIn() && request.auth.uid == userId;
+      allow delete: if isSignedIn() && request.auth.uid == userId;
+
+      match /friends/{friendId} {
+        allow read: if isSignedIn();
+        // User can add themselves to someone else's friend list if they are accepting a request,
+        // or add someone to their own list
+        allow create: if isSignedIn() && (request.auth.uid == userId || request.auth.uid == friendId) && isValidFriend(incoming());
+        allow update: if isSignedIn() && (request.auth.uid == userId || request.auth.uid == friendId);
+        allow delete: if isSignedIn() && (request.auth.uid == userId || request.auth.uid == friendId);
+      }
+      match /followers/{followerId} {
+        allow read: if isSignedIn();
+        allow create, delete: if isSignedIn() && (request.auth.uid == followerId || request.auth.uid == userId);
+      }
+      match /following/{followingId} {
+        allow read: if isSignedIn();
+        allow create, delete: if isSignedIn() && (request.auth.uid == userId || request.auth.uid == followingId);
+      }
+      match /shared_graves/{shareId} {
+        allow read: if isSignedIn() && request.auth.uid == userId;
+        // Anyone can share a grave with you (or we could enforce friendship, but we'll leave it simple for now)
+        allow create: if isSignedIn() && isValidSharedGrave(incoming()) && incoming().fromUserId == request.auth.uid;
+        allow delete: if isSignedIn() && request.auth.uid == userId;
+      }
+    }
+
+    match /usernames/{username} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isValidUsernameRegistry(incoming()) && incoming().uid == request.auth.uid;
+      allow update: if true;
+      allow delete: if isSignedIn() && existing().uid == request.auth.uid;
+    }
+
+    match /friend_requests/{requestId} {
+      allow read: if isSignedIn() && (resource.data.fromUserId == request.auth.uid || resource.data.toUserId == request.auth.uid);
+      allow create: if isSignedIn() && isValidFriendRequest(incoming()) && incoming().fromUserId == request.auth.uid;
+      allow update: if isSignedIn() && (resource.data.fromUserId == request.auth.uid || resource.data.toUserId == request.auth.uid);
+      allow delete: if isSignedIn() && (resource.data.fromUserId == request.auth.uid || resource.data.toUserId == request.auth.uid);
+    }
+    match /confessions/{confessionId} {
+      allow read: if true;
+      allow create: if incoming().text is string && incoming().text.size() <= 140;
+      allow update: if true;
+      allow delete: if true;
+    }
+  }
+}

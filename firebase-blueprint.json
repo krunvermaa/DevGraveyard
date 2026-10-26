@@ -1,0 +1,105 @@
+{
+  "entities": {
+    "Grave": {
+      "title": "Grave",
+      "description": "A record of an abandoned developer project",
+      "type": "object",
+      "properties": {
+        "project_name": { "type": "string", "maxLength": 100 },
+        "cause_of_death": { "type": "string", "maxLength": 100 },
+        "lived_for": { "type": "string", "maxLength": 50 },
+        "lesson_learned": { "type": "string", "maxLength": 1000 },
+        "tech_stack": { "type": "string", "maxLength": 200 },
+        "is_anonymous": { "type": "boolean" },
+        "created_at": { "type": "string" },
+        "user_id": { "type": "string", "maxLength": 128 },
+        "user_name": { "type": "string", "maxLength": 100 },
+        "respects": { "type": "number" },
+        "eulogies": { "type": "array" }
+      },
+      "required": ["project_name", "cause_of_death", "lived_for", "lesson_learned", "tech_stack", "is_anonymous", "created_at"]
+    },
+    "User": {
+      "title": "User",
+      "description": "User profile with unique username",
+      "type": "object",
+      "properties": {
+        "username": { "type": "string", "maxLength": 30 },
+        "email": { "type": "string", "maxLength": 100 },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["username", "email", "createdAt"]
+    },
+    "Username": {
+      "title": "Username",
+      "description": "Used to guarantee uniqueness of usernames",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "maxLength": 128 }
+      },
+      "required": ["uid"]
+    },
+    "FriendRequest": {
+      "title": "Friend Request",
+      "description": "A friend request from one user to another",
+      "type": "object",
+      "properties": {
+        "fromUserId": { "type": "string", "maxLength": 128 },
+        "fromUsername": { "type": "string", "maxLength": 30 },
+        "toUserId": { "type": "string", "maxLength": 128 },
+        "status": { "type": "string", "enum": ["pending", "accepted", "rejected"] },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["fromUserId", "fromUsername", "toUserId", "status", "createdAt"]
+    },
+    "Friend": {
+      "title": "Friend",
+      "description": "A friend relationship",
+      "type": "object",
+      "properties": {
+        "username": { "type": "string", "maxLength": 30 },
+        "addedAt": { "type": "string" }
+      },
+      "required": ["username", "addedAt"]
+    },
+    "SharedGrave": {
+      "title": "Shared Grave",
+      "description": "A grave shared from one friend to another",
+      "type": "object",
+      "properties": {
+        "graveId": { "type": "string", "maxLength": 128 },
+        "graveName": { "type": "string", "maxLength": 100 },
+        "fromUserId": { "type": "string", "maxLength": 128 },
+        "fromUsername": { "type": "string", "maxLength": 30 },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["graveId", "graveName", "fromUserId", "fromUsername", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/graves/{graveId}": {
+      "schema": { "$ref": "#/entities/Grave" },
+      "description": "Stores all submitted graves"
+    },
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "User profiles"
+    },
+    "/usernames/{username}": {
+      "schema": { "$ref": "#/entities/Username" },
+      "description": "Unique username registry"
+    },
+    "/friend_requests/{requestId}": {
+      "schema": { "$ref": "#/entities/FriendRequest" },
+      "description": "Global friend requests collection"
+    },
+    "/users/{userId}/friends/{friendId}": {
+      "schema": { "$ref": "#/entities/Friend" },
+      "description": "User's friends list"
+    },
+    "/users/{userId}/shared_graves/{shareId}": {
+      "schema": { "$ref": "#/entities/SharedGrave" },
+      "description": "Graves shared with this user"
+    }
+  }
+}

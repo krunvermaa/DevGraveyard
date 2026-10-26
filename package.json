@@ -7,7 +7,10 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "tsc --noEmit",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "firebase:bind": "node scripts/bind-firebase.mjs",
+    "firebase:status": "node scripts/bind-firebase.mjs --status",
+    "firebase:deploy-rules": "npx firebase-tools deploy --only firestore:rules"
   },
   "dependencies": {
     "clsx": "^2.1.1",

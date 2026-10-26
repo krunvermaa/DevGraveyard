@@ -17,8 +17,9 @@ dist-ssr
 .env.*.local
 *.local
 
-# Vercel
+# Vercel & Firebase CLI cache
 .vercel
+.firebase
 
 # Editor & System
 .vscode/*

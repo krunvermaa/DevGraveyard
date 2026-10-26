@@ -70,7 +70,17 @@ export const Login: React.FC = () => {
         return;
       }
       console.error('[Auth Error]', err);
-      setError(err?.message || `Failed to login with ${provider === 'github' ? 'GitHub' : 'Google'}`);
+      let message = err?.message || `Failed to login with ${provider === 'github' ? 'GitHub' : 'Google'}`;
+      if (err?.code === 'auth/unauthorized-domain') {
+        message = 'Unauthorized Domain: Add this domain (e.g. localhost or your Vercel URL) in Firebase Console -> Authentication -> Settings -> Authorized Domains.';
+      } else if (err?.code === 'auth/popup-blocked') {
+        message = 'Popup was blocked by your browser. Please allow popups for this site and try again.';
+      } else if (err?.code === 'auth/account-exists-with-different-credential') {
+        message = 'An account already exists with this email using a different sign-in provider.';
+      } else if (err?.code === 'auth/network-request-failed') {
+        message = 'Network request failed. Please check your connection and Firebase configuration.';
+      }
+      setError(message);
     } finally {
       setIsLoggingIn(false);
     }

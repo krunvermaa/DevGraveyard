@@ -74,6 +74,28 @@
         "createdAt": { "type": "string" }
       },
       "required": ["graveId", "graveName", "fromUserId", "fromUsername", "createdAt"]
+    },
+    "Confession": {
+      "title": "Confession",
+      "description": "Anonymous developer confession on the memorial wall",
+      "type": "object",
+      "properties": {
+        "text": { "type": "string", "maxLength": 140 },
+        "color": { "type": "string", "maxLength": 50 },
+        "rotation": { "type": "number" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["text"]
+    },
+    "FollowEdge": {
+      "title": "Follow Edge",
+      "description": "Follower / Following directional edge between users",
+      "type": "object",
+      "properties": {
+        "username": { "type": "string", "maxLength": 30 },
+        "addedAt": { "type": "string" }
+      },
+      "required": ["username", "addedAt"]
     }
   },
   "firestore": {
@@ -97,9 +119,21 @@
       "schema": { "$ref": "#/entities/Friend" },
       "description": "User's friends list"
     },
+    "/users/{userId}/followers/{followerId}": {
+      "schema": { "$ref": "#/entities/FollowEdge" },
+      "description": "User's followers"
+    },
+    "/users/{userId}/following/{followingId}": {
+      "schema": { "$ref": "#/entities/FollowEdge" },
+      "description": "Accounts this user follows"
+    },
     "/users/{userId}/shared_graves/{shareId}": {
       "schema": { "$ref": "#/entities/SharedGrave" },
       "description": "Graves shared with this user"
+    },
+    "/confessions/{confessionId}": {
+      "schema": { "$ref": "#/entities/Confession" },
+      "description": "Anonymous developer confessions wall"
     }
   }
 }

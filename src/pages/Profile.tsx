@@ -1,26 +1,20 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { Navigate } from 'react-router-dom';
+import { Navigate, Link } from 'react-router-dom';
+import { Button } from '../components/ui/Button';
 import { Grave } from '../types';
-import { getUserGraves, getGrave } from '../services/graveService';
+import { getUserGraves } from '../services/graveService';
+import { calculateUserTotalScore } from '../services/graveScoreService';
+import { GraveCard } from '../components/GraveCard';
 import { GraveModal } from '../components/GraveModal';
+import { FriendsManager } from '../components/FriendsManager';
+import { motion, AnimatePresence } from 'motion/react';
+import { Loader2, Settings } from 'lucide-react';
+
 import { AvatarSelectionModal } from '../components/AvatarSelectionModal';
 import { SettingsModal } from '../components/SettingsModal';
-import { motion, AnimatePresence } from 'motion/react';
 import { db } from '../firebase';
 import { collection, onSnapshot, getDocs } from 'firebase/firestore';
-
-// Profile Redesign Components & Services
-import { ProfileHeader } from '../components/profile/ProfileHeader';
-import { MorticianStatsShowcase } from '../components/profile/MorticianStatsShowcase';
-import { InscribedGravesGrid } from '../components/profile/InscribedGravesGrid';
-import { TechAutopsyMatrix } from '../components/profile/TechAutopsyMatrix';
-import { ComradesAndMournersView } from '../components/profile/ComradesAndMournersView';
-import { CryptSharesView } from '../components/profile/CryptSharesView';
-import { calculateMorticianStats, getTechAutopsy } from '../services/morticianService';
-import { Skull, Activity, Users, MessageSquare } from 'lucide-react';
-
-type NavigationTab = 'graves' | 'autopsy' | 'comrades' | 'shares';
 
 export const Profile: React.FC = () => {
   const { user, userProfile, loading } = useAuth();
@@ -29,19 +23,11 @@ export const Profile: React.FC = () => {
   const [selectedGrave, setSelectedGrave] = useState<Grave | null>(null);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
-
-  // Active navigation tab
-  const [activeTab, setActiveTab] = useState<NavigationTab>('graves');
-  const [selectedTechFilter, setSelectedTechFilter] = useState<string | null>(null);
-
-  // Counts for tab badges
   const [followersCount, setFollowersCount] = useState(0);
   const [friendsCount, setFriendsCount] = useState(0);
-  const [sharesCount, setSharesCount] = useState(0);
 
   useEffect(() => {
     if (user?.uid) {
-      // Fetch user's graves
       getUserGraves(user.uid).then((data) => {
         setGraves(data);
         setLoadingGraves(false);
@@ -53,56 +39,43 @@ export const Profile: React.FC = () => {
       });
 
       // Listen to followers
-      const followersUnsub = onSnapshot(collection(db, 'users', user.uid, 'followers'), (snapshot) => {
+      const unsubscribe = onSnapshot(collection(db, 'users', user.uid, 'followers'), (snapshot) => {
         setFollowersCount(snapshot.size);
       });
-
-      // Listen to shares count
-      const sharesUnsub = onSnapshot(collection(db, 'users', user.uid, 'shared_graves'), (snapshot) => {
-        setSharesCount(snapshot.size);
-      });
-
-      return () => {
-        followersUnsub();
-        sharesUnsub();
-      };
+      return () => unsubscribe();
     }
   }, [user]);
 
-  const handleSelectSharedGrave = async (graveId: string) => {
-    const grave = await getGrave(graveId);
-    if (grave) {
-      setSelectedGrave(grave);
-    }
-  };
+  const techStats = useMemo(() => {
+    const stats: Record<string, number> = {};
+    graves.forEach(grave => {
+      if (grave.tech_stack) {
+        const tags = grave.tech_stack.split(',').map(t => t.trim()).filter(Boolean);
+        tags.forEach(tag => {
+          stats[tag] = (stats[tag] || 0) + 1;
+        });
+      }
+    });
+    return Object.entries(stats).sort((a, b) => b[1] - a[1]);
+  }, [graves]);
 
-  // Calculate comprehensive Mortician Stats & Tech Autopsy Breakdown
-  const morticianStats = useMemo(() => calculateMorticianStats(graves), [graves]);
-  const autopsyReport = useMemo(() => getTechAutopsy(graves), [graves]);
-
-  const handleFilterByTechFromMatrix = (techName: string) => {
-    setSelectedTechFilter(techName);
-    setActiveTab('graves');
-  };
+  const totalGraveScore = useMemo(() => calculateUserTotalScore(graves), [graves]);
 
   if (loading) return null;
   if (!user) return <Navigate to="/" replace />;
 
-  const username = userProfile?.username || user.displayName || 'DevMortician';
-
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 15 }}
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      className="max-w-5xl mx-auto pb-20 pt-2 px-4 sm:px-6 relative z-10 space-y-8"
+      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      className="max-w-4xl mx-auto pb-12 pt-0 px-4 sm:px-6 relative z-10 mb-20"
     >
-      {/* Modals */}
       <AnimatePresence>
         {selectedGrave && (
-          <GraveModal
-            grave={selectedGrave}
-            onClose={() => setSelectedGrave(null)}
+          <GraveModal 
+            grave={selectedGrave} 
+            onClose={() => setSelectedGrave(null)} 
           />
         )}
         {showAvatarModal && (
@@ -113,149 +86,158 @@ export const Profile: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* Terminal Title Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 border-b border-zinc-800/80 pb-3">
-        <div>
-          <span className="font-mono text-xs uppercase tracking-widest text-[#c53030] font-bold">
-            [ TERMINAL // DEV CEMETERY MEMORIAL ]
-          </span>
-          <h1 className="text-2xl sm:text-3xl font-extrabold font-serif text-white tracking-wide uppercase mt-1">
+      <div className="space-y-8">
+        <header className="space-y-3 text-center pt-8 pb-4">
+          <h1 className="text-4xl md:text-5xl font-bold tracking-widest text-white font-serif uppercase drop-shadow-[0_0_15px_rgba(255,255,255,0.2)] border-b border-white/10 pb-4 inline-block">
             My Yard
           </h1>
-        </div>
-        <div className="font-mono text-xs text-zinc-400">
-          Rank Status: <span className="font-bold text-zinc-200">{morticianStats.rank.title}</span>
-        </div>
-      </div>
+          <p className="text-zinc-400 font-mono text-sm uppercase tracking-widest">
+            Your Personal Cemetery
+          </p>
+        </header>
 
-      {/* 1. Header Card */}
-      <ProfileHeader
-        username={username}
-        photoURL={user.photoURL || userProfile?.photoURL}
-        bio={userProfile?.bio}
-        createdAt={userProfile?.createdAt || user.metadata.creationTime}
-        instagram={userProfile?.instagram}
-        whatsapp={userProfile?.whatsapp}
-        github={userProfile?.github}
-        isOwnProfile={true}
-        onOpenAvatarModal={() => setShowAvatarModal(true)}
-        onOpenSettingsModal={() => setShowSettingsModal(true)}
-      />
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.5 }}
+          className="grid grid-cols-1 md:grid-cols-3 gap-6"
+        >
+          {/* Main User Card */}
+          <div className="md:col-span-2 p-6 sm:p-8 bg-zinc-950/80 border border-zinc-800/80 rounded-3xl backdrop-blur-md shadow-2xl relative overflow-hidden flex flex-col sm:flex-row items-center sm:items-start gap-6">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-zinc-800 via-[#c53030]/50 to-zinc-800" />
+            
+            <button 
+              onClick={() => setShowAvatarModal(true)}
+              className="relative group w-24 h-24 rounded-full border-4 border-zinc-900 shadow-[0_0_20px_rgba(0,0,0,0.8)] overflow-hidden hover:border-zinc-700 transition-all cursor-pointer shrink-0"
+            >
+              {user.photoURL ? (
+                <img src={user.photoURL} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full bg-zinc-800 flex items-center justify-center">
+                  <span className="text-4xl text-[#c53030] font-serif uppercase">
+                    {userProfile?.username?.charAt(0) || user.displayName?.charAt(0) || user.email?.charAt(0) || '?'}
+                  </span>
+                </div>
+              )}
+              <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <span className="text-[10px] font-mono uppercase tracking-widest text-white">Edit</span>
+              </div>
+            </button>
+            
+            <div className="flex-1 text-center sm:text-left">
+              <h2 className="text-3xl font-bold font-sans text-white mb-1">
+                {userProfile?.username ? `@${userProfile.username}` : (user.displayName || 'Unknown Developer')}
+              </h2>
+              <p className="text-zinc-500 font-mono text-xs uppercase tracking-widest mb-6">Rest in peace</p>
+              
+              <div className="flex flex-wrap justify-center sm:justify-start gap-6 sm:gap-8">
+                <div className="flex flex-col items-center sm:items-start">
+                  <span className="text-2xl font-bold text-zinc-200">{graves.length}</span>
+                  <span className="text-[10px] uppercase tracking-widest text-zinc-500">Graves</span>
+                </div>
+                <div className="flex flex-col items-center sm:items-start">
+                  <span className="text-2xl font-bold text-zinc-200">{friendsCount}</span>
+                  <span className="text-[10px] uppercase tracking-widest text-zinc-500">Friends</span>
+                </div>
+                <div className="flex flex-col items-center sm:items-start">
+                  <span className="text-2xl font-bold text-zinc-200">{followersCount}</span>
+                  <span className="text-[10px] uppercase tracking-widest text-zinc-500">Followers</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="absolute top-6 right-6">
+              <Button
+                onClick={() => setShowSettingsModal(true)}
+                variant="ghost"
+                size="icon"
+                className="text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-full"
+              >
+                <Settings className="w-5 h-5" />
+              </Button>
+            </div>
+          </div>
 
-      {/* 2. Mortician Stats Showcase */}
-      <MorticianStatsShowcase
-        stats={morticianStats}
-        autopsy={autopsyReport}
-        onNavigateToAutopsy={() => setActiveTab('autopsy')}
-      />
-
-      {/* 3. Redesigned Navigation Tabs */}
-      <div className="space-y-6 pt-2">
-        <div className="flex items-center overflow-x-auto no-scrollbar gap-2 sm:gap-3 p-1.5 bg-zinc-950/90 border border-zinc-800/90 rounded-2xl backdrop-blur-md shadow-lg">
-          {/* Tab 1: Inscribed Graves */}
-          <button
-            onClick={() => setActiveTab('graves')}
-            className={`flex-1 min-w-[150px] sm:min-w-0 py-3 px-4 rounded-xl font-mono text-xs uppercase tracking-wider font-bold transition-all flex items-center justify-center gap-2 ${
-              activeTab === 'graves'
-                ? 'bg-zinc-800 text-white border border-zinc-700 shadow-[0_0_15px_rgba(255,255,255,0.08)]'
-                : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/60'
-            }`}
-          >
-            <Skull className={`w-4 h-4 ${activeTab === 'graves' ? 'text-red-400' : 'text-zinc-400'}`} />
-            <span>Inscribed Graves</span>
-            <span className={`px-2 py-0.5 rounded-full text-[10px] ${activeTab === 'graves' ? 'bg-red-950 text-red-200 border border-red-800' : 'bg-zinc-900 text-zinc-400'}`}>
-              {graves.length}
+          {/* GraveScore Card */}
+          <div className="bg-zinc-950/80 border border-zinc-800/80 rounded-3xl p-6 backdrop-blur-md shadow-2xl flex flex-col items-center justify-center relative overflow-hidden group">
+            <div className="absolute inset-0 bg-[#c53030]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <span className="text-[10px] uppercase tracking-widest text-[#c53030] font-bold mb-2 font-mono">GraveScore</span>
+            <span className="text-6xl font-serif text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]">
+              {totalGraveScore}
             </span>
-          </button>
+          </div>
+        </motion.div>
 
-          {/* Tab 2: Tech Autopsy Matrix */}
-          <button
-            onClick={() => setActiveTab('autopsy')}
-            className={`flex-1 min-w-[160px] sm:min-w-0 py-3 px-4 rounded-xl font-mono text-xs uppercase tracking-wider font-bold transition-all flex items-center justify-center gap-2 ${
-              activeTab === 'autopsy'
-                ? 'bg-zinc-800 text-white border border-zinc-700 shadow-[0_0_15px_rgba(255,255,255,0.08)]'
-                : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/60'
-            }`}
-          >
-            <Activity className={`w-4 h-4 ${activeTab === 'autopsy' ? 'text-red-400' : 'text-zinc-400'}`} />
-            <span>Tech Autopsy Matrix</span>
-            <span className={`px-2 py-0.5 rounded-full text-[10px] ${activeTab === 'autopsy' ? 'bg-red-950 text-red-200 border border-red-800' : 'bg-zinc-900 text-zinc-400'}`}>
-              {autopsyReport.totalUniqueTechs}
-            </span>
-          </button>
+        {/* Friends Manager */}
+        <FriendsManager />
 
-          {/* Tab 3: Comrades & Mourners */}
-          <button
-            onClick={() => setActiveTab('comrades')}
-            className={`flex-1 min-w-[170px] sm:min-w-0 py-3 px-4 rounded-xl font-mono text-xs uppercase tracking-wider font-bold transition-all flex items-center justify-center gap-2 ${
-              activeTab === 'comrades'
-                ? 'bg-zinc-800 text-white border border-zinc-700 shadow-[0_0_15px_rgba(255,255,255,0.08)]'
-                : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/60'
-            }`}
-          >
-            <Users className={`w-4 h-4 ${activeTab === 'comrades' ? 'text-red-400' : 'text-zinc-400'}`} />
-            <span>Comrades & Mourners</span>
-            <span className={`px-2 py-0.5 rounded-full text-[10px] ${activeTab === 'comrades' ? 'bg-red-950 text-red-200 border border-red-800' : 'bg-zinc-900 text-zinc-400'}`}>
-              {friendsCount + followersCount}
-            </span>
-          </button>
+        {/* Tech Stats Section */}
+        {techStats.length > 0 && (
+          <div className="space-y-6 bg-zinc-950/40 p-6 md:p-8 rounded-3xl border border-zinc-800/40 backdrop-blur-sm shadow-xl">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-serif font-bold text-white tracking-widest uppercase">
+                Tech Graveyard
+              </h2>
+              <div className="h-px flex-1 bg-gradient-to-r from-zinc-800 to-transparent ml-6" />
+            </div>
+            <div className="flex flex-wrap gap-4">
+              {techStats.map(([tag, count]) => (
+                <div key={tag} className="flex items-center gap-3 bg-zinc-900/80 border border-zinc-800 pl-4 pr-2 py-2 rounded-xl group hover:border-[#c53030]/30 transition-colors">
+                  <span className="text-sm font-medium text-zinc-300 group-hover:text-white transition-colors">{tag}</span>
+                  <span className="text-xs font-mono font-bold text-[#c53030] bg-[#c53030]/10 px-2 py-1 rounded-lg">
+                    {count} {count === 1 ? 'grave' : 'graves'}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
-          {/* Tab 4: Crypt Shares */}
-          <button
-            onClick={() => setActiveTab('shares')}
-            className={`flex-1 min-w-[140px] sm:min-w-0 py-3 px-4 rounded-xl font-mono text-xs uppercase tracking-wider font-bold transition-all flex items-center justify-center gap-2 ${
-              activeTab === 'shares'
-                ? 'bg-zinc-800 text-white border border-zinc-700 shadow-[0_0_15px_rgba(255,255,255,0.08)]'
-                : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/60'
-            }`}
-          >
-            <MessageSquare className={`w-4 h-4 ${activeTab === 'shares' ? 'text-red-400' : 'text-zinc-400'}`} />
-            <span>Crypt Shares</span>
-            {sharesCount > 0 && (
-              <span className="px-2 py-0.5 rounded-full text-[10px] bg-red-600 text-white font-bold">
-                {sharesCount}
-              </span>
-            )}
-          </button>
-        </div>
-
-        {/* Tab Content Panels */}
-        <div className="pt-2">
-          {activeTab === 'graves' && (
-            <InscribedGravesGrid
-              graves={graves}
-              loading={loadingGraves}
-              isOwnProfile={true}
-              currentUsername={username}
-              onSelectGrave={setSelectedGrave}
-              selectedTechFilter={selectedTechFilter}
-              onClearTechFilter={() => setSelectedTechFilter(null)}
-            />
-          )}
-
-          {activeTab === 'autopsy' && (
-            <TechAutopsyMatrix
-              autopsy={autopsyReport}
-              onFilterByTech={handleFilterByTechFromMatrix}
-            />
-          )}
-
-          {activeTab === 'comrades' && (
-            <ComradesAndMournersView
-              targetUserId={user.uid}
-              isOwnProfile={true}
-              targetUsername={username}
-            />
-          )}
-
-          {activeTab === 'shares' && (
-            <CryptSharesView
-              isOwnProfile={true}
-              targetUserId={user.uid}
-              targetUsername={username}
-              myGraves={graves}
-              onSelectGraveId={handleSelectSharedGrave}
-            />
+        {/* My Buries Section */}
+        <div className="space-y-6">
+          <div className="flex items-center gap-4">
+            <h2 className="text-2xl font-bold font-sans text-zinc-200">
+              My Buries
+            </h2>
+            <div className="h-px flex-1 bg-gradient-to-r from-zinc-800 to-transparent" />
+          </div>
+          
+          {loadingGraves ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="w-8 h-8 text-[#c53030] animate-spin" />
+            </div>
+          ) : graves.length === 0 ? (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex flex-col items-center justify-center py-16 px-6 border border-[#c53030]/20 bg-surface/30 rounded-xl shadow-[0_0_30px_rgba(223,54,54,0.05)]"
+            >
+              <div className="text-5xl mb-4 opacity-80">🪦</div>
+              <h3 className="text-xl font-bold text-zinc-200 mb-2 font-serif">No Graves Yet</h3>
+              <p className="text-zinc-400 font-mono text-sm mb-6 text-center max-w-sm">
+                Your graveyard is empty. It's time to lay your first abandoned project to rest.
+              </p>
+              <Link to="/submit">
+                <Button className="bg-zinc-800 text-[#c53030] border border-[#c53030]/30 hover:bg-[#c53030]/10 hover:border-[#c53030]/50 font-mono">
+                  Dig Your First Grave
+                </Button>
+              </Link>
+            </motion.div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-x-8 gap-y-32 md:gap-y-40 mt-12 px-2">
+              <AnimatePresence>
+                {graves.map((grave, index) => (
+                  <motion.div
+                    key={grave.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                  >
+                    <GraveCard grave={grave} onClick={() => setSelectedGrave(grave)} />
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
           )}
         </div>
       </div>

@@ -1,0 +1,31 @@
+<svg viewBox="15 7 130 130" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#f87171" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#991b1b" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowSoft" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#f87171" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#991b1b" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="softGlow" x="-70%" y="-70%" width="240%" height="240%">
+      <feGaussianBlur stdDeviation="2.4" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+<g stroke="#f87171" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <ellipse cx="90" cy="58" rx="28" ry="22"/>
+    <path d="M74,40 Q90,32 108,42" stroke-width="1.4"/>
+    <path d="M76,74 Q90,80 104,74" stroke-width="1.2"/>
+    <path d="M62,60 L26,68 L62,78 Z" fill="#991b1b" stroke="none"/>
+    <path d="M40,66 L26,68 L40,70" stroke-width="1.2"/>
+    <circle cx="98" cy="56" r="6" fill="#df3636" filter="url(#softGlow)" stroke="none"/>
+    <circle cx="98" cy="56" r="9" stroke-width="1.2"/>
+    <path d="M78,80 Q90,92 104,84"/>
+    <path d="M96,96 Q92,106 98,114 Q102,118 98,122" stroke-width="1.6"/>
+    <path d="M104,44 L112,38 M112,50 L120,46" stroke-width="1.2"/>
+  </g>
+</svg>

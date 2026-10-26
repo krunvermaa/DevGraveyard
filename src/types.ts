@@ -1,0 +1,82 @@
+export interface User {
+  uid: string;
+  username: string;
+  email: string;
+  createdAt: string;
+  photoURL?: string;
+  instagram?: string;
+  whatsapp?: string;
+}
+
+export interface FriendRequest {
+  id: string;
+  fromUserId: string;
+  fromUsername: string;
+  toUserId: string;
+  status: 'pending' | 'accepted' | 'rejected';
+  createdAt: string;
+}
+
+export interface Friend {
+  uid: string;
+  username: string;
+  addedAt: string;
+}
+
+export interface SharedGrave {
+  id: string;
+  graveId: string;
+  graveName: string;
+  fromUserId: string;
+  fromUsername: string;
+  createdAt: string;
+}
+
+export interface Eulogy {
+  id: string;
+  text: string;
+  user_name: string;
+  user_id?: string;
+  created_at: string;
+}
+
+export interface PostMortem {
+  rootCauseHypothesis: string;
+  contributingFactors: string[];
+  warningSigns: string[];
+  preventionChecklist: string[];
+  evidence: string[];
+  confidence: 'high' | 'medium' | 'low';
+  generatedAt?: string;
+}
+
+export interface Grave {
+  id: string;
+  project_name: string;
+  cause_of_death: string;
+  lived_for: string;
+  lesson_learned: string;
+  tech_stack: string;
+  is_anonymous: boolean;
+  created_at: string;
+  user_id?: string;
+  user_name?: string;
+  user_avatar?: string;
+  github_link?: string;
+  respects?: number;
+  rips?: string[];
+  eulogies?: Eulogy[];
+  postmortem?: PostMortem;
+}
+
+export type GraveFormData = Omit<Grave, 'id' | 'created_at' | 'user_id' | 'user_name' | 'respects' | 'eulogies'>;
+
+export enum CauseOfDeath {
+  LACK_OF_TIME = "Lack of Time",
+  LOSS_OF_INTEREST = "Loss of Interest",
+  TECHNICAL_ROADBLOCKS = "Technical Roadblocks",
+  MARKET_FIT_MISSING = "Market Fit Missing",
+  SCOPE_CREEP = "Scope Creep",
+  CO_FOUNDER_CONFLICT = "Co-founder Conflict",
+  OTHER = "Other"
+}

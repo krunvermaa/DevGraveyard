@@ -1,0 +1,27 @@
+<svg viewBox="15 7 130 130" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#f87171" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#991b1b" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowSoft" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#f87171" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#991b1b" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="softGlow" x="-70%" y="-70%" width="240%" height="240%">
+      <feGaussianBlur stdDeviation="2.4" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+<g stroke="#f87171" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <polygon points="80,28 106,60 96,112 64,112 54,60" fill="url(#glow)" fill-opacity="0.45"/>
+    <path d="M80,28 L80,112 M54,60 L106,60 M80,28 L64,112 M80,28 L96,112"/>
+    <path d="M54,60 L44,54 M106,60 L116,54" stroke-width="1.2"/>
+    <polygon points="40,46 46,52 40,58 34,52" stroke-width="1.4"/>
+    <polygon points="122,44 128,50 122,56 116,50" stroke-width="1.2"/>
+    <circle cx="80" cy="66" r="8" fill="url(#glow)" filter="url(#softGlow)" stroke="none"/>
+  </g>
+</svg>

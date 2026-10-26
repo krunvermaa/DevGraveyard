@@ -1,0 +1,8 @@
+/* DevGraveyard global styles */
+@layer base {
+  body {
+    background-color: #050505;
+    color: #e4e4e7;
+    font-family: 'Inter', sans-serif;
+  }
+}

@@ -136,7 +136,7 @@ export const GithubRepoPicker: React.FC<GithubRepoPickerProps> = ({ onSelectRepo
         type="button" 
         onClick={handleConnect}
         disabled={loading}
-        className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-zinc-400 hover:text-white transition-colors bg-zinc-900/50 border border-zinc-800/50 px-4 py-3 rounded-lg hover:border-[#c53030]/50 hover:bg-[#c53030]/10 w-full justify-center"
+        className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-zinc-200 hover:text-white transition-all bg-zinc-900 border border-zinc-700 px-4 py-3 rounded-lg hover:border-[#c53030]/60 hover:bg-zinc-800 w-full justify-center font-semibold shadow-sm cursor-pointer"
       >
         {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <GitBranch className="w-4 h-4" />}
         {loading ? 'Connecting to GitHub...' : 'Connect GitHub & Import Repo'}

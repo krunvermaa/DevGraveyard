@@ -164,17 +164,26 @@ export const FriendsManager: React.FC = () => {
                 onChange={e => setSearchUsername(e.target.value)}
                 className="flex-1 bg-black/50 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-[#c53030]/50 transition-colors"
               />
-              <Button type="submit" disabled={searchLoading || !searchUsername.trim()} className="bg-zinc-800 text-white border-zinc-700 hover:border-[#c53030]/50 text-xs px-3">
+              <Button 
+                type="submit" 
+                variant="secondary"
+                disabled={searchLoading || !searchUsername.trim()} 
+                className="bg-zinc-800 text-zinc-100 hover:text-white border-zinc-700 hover:border-[#c53030]/60 hover:bg-zinc-700 font-mono text-xs px-4 h-9 shadow-sm"
+              >
                 {searchLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Search'}
               </Button>
             </form>
             {searchError && <p className="text-xs text-code-red font-mono">{searchError}</p>}
             {searchResult && (
               <div className="flex items-center justify-between p-3 bg-black/40 border border-zinc-800 rounded-lg">
-                <Link to={`/user/${searchResult.username}`} className="text-sm text-zinc-300 font-mono hover:text-white underline decoration-[#c53030]/50 underline-offset-4">
+                <Link to={`/user/${searchResult.username}`} className="text-sm text-zinc-200 font-mono hover:text-white underline decoration-[#c53030]/50 underline-offset-4">
                   @{searchResult.username}
                 </Link>
-                <Button onClick={handleSendRequest} className="bg-[#c53030]/20 text-[#c53030] border border-[#c53030]/30 hover:bg-[#c53030]/30 h-8 text-xs">
+                <Button 
+                  onClick={handleSendRequest} 
+                  variant="secondary"
+                  className="bg-[#c53030]/20 text-red-200 hover:text-white border border-[#c53030]/50 hover:border-[#c53030] hover:bg-[#c53030] h-8 text-xs font-mono px-3 transition-colors shadow-sm"
+                >
                   Send Request
                 </Button>
               </div>
@@ -184,26 +193,38 @@ export const FriendsManager: React.FC = () => {
           <div className="p-6 border border-zinc-800/50 bg-surface/30 rounded-xl space-y-4">
             <h3 className="text-sm font-mono uppercase tracking-widest text-zinc-400">Friends ({friends.length})</h3>
             {friends.length === 0 ? (
-              <p className="text-xs text-zinc-600 font-mono italic">No friends yet. It's lonely in the graveyard.</p>
+              <p className="text-xs text-zinc-500 font-mono italic">No friends yet. It's lonely in the graveyard.</p>
             ) : (
               <ul className="space-y-2">
                 {friends.map(friend => (
                   <li key={friend.uid} className="flex flex-wrap gap-2 items-center justify-between p-3 bg-black/20 rounded-lg border border-white/5">
-                    <Link to={`/user/${friend.username}`} className="text-sm text-zinc-300 font-mono hover:text-white underline decoration-[#c53030]/50 underline-offset-4 break-all">
+                    <Link to={`/user/${friend.username}`} className="text-sm text-zinc-200 font-mono hover:text-white underline decoration-[#c53030]/50 underline-offset-4 break-all">
                       @{friend.username}
                     </Link>
                     <div className="flex gap-2">
                       {confirmFriendId === friend.uid ? (
                         <>
-                          <Button onClick={() => setConfirmFriendId(null)} className="h-7 px-2 text-[10px] bg-zinc-800/50 text-zinc-400 border border-zinc-700/50 hover:bg-zinc-700">
+                          <Button 
+                            onClick={() => setConfirmFriendId(null)} 
+                            variant="secondary"
+                            className="h-7 px-2.5 text-[11px] font-mono bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-700 hover:border-zinc-500 hover:bg-zinc-700"
+                          >
                             Cancel
                           </Button>
-                          <Button onClick={() => handleRemoveFriend(friend.uid)} className="h-7 px-2 text-[10px] bg-code-red/20 text-code-red border border-code-red/30 hover:bg-code-red/30">
+                          <Button 
+                            onClick={() => handleRemoveFriend(friend.uid)} 
+                            variant="danger"
+                            className="h-7 px-2.5 text-[11px] font-mono bg-[#c53030] text-white border border-red-500 hover:bg-red-700 hover:border-red-400 shadow-sm"
+                          >
                             Confirm
                           </Button>
                         </>
                       ) : (
-                        <Button onClick={() => handleRemoveFriend(friend.uid)} className="h-7 px-2 text-[10px] bg-zinc-800/50 text-zinc-400 border border-zinc-700/50 hover:bg-code-red/20 hover:text-code-red hover:border-code-red/30">
+                        <Button 
+                          onClick={() => handleRemoveFriend(friend.uid)} 
+                          variant="secondary"
+                          className="h-7 px-2.5 text-[11px] font-mono bg-zinc-800 text-zinc-300 hover:text-red-400 border border-zinc-700 hover:border-red-500/60 hover:bg-red-950/30 transition-colors"
+                        >
                           Remove
                         </Button>
                       )}
@@ -216,30 +237,42 @@ export const FriendsManager: React.FC = () => {
           <div className="p-6 border border-zinc-800/50 bg-surface/30 rounded-xl space-y-4">
             <h3 className="text-sm font-mono uppercase tracking-widest text-zinc-400">Followers ({followers.length})</h3>
             {followers.length === 0 ? (
-              <p className="text-xs text-zinc-600 font-mono italic">No followers yet.</p>
+              <p className="text-xs text-zinc-500 font-mono italic">No followers yet.</p>
             ) : (
               <ul className="space-y-2">
                 {followers.map(follower => (
                   <li key={follower.uid} className="flex flex-wrap gap-2 items-center justify-between p-3 bg-black/20 rounded-lg border border-white/5">
                     {follower.username ? (
-                      <Link to={`/user/${follower.username}`} className="text-sm text-zinc-300 font-mono hover:text-white underline decoration-[#c53030]/50 underline-offset-4 break-all">
+                      <Link to={`/user/${follower.username}`} className="text-sm text-zinc-200 font-mono hover:text-white underline decoration-[#c53030]/50 underline-offset-4 break-all">
                         @{follower.username}
                       </Link>
                     ) : (
-                      <span className="text-sm text-zinc-500 font-mono">Unknown user</span>
+                      <span className="text-sm text-zinc-400 font-mono">Unknown user</span>
                     )}
                     <div className="flex gap-2">
                       {confirmFollowerId === follower.uid ? (
                         <>
-                          <Button onClick={() => setConfirmFollowerId(null)} className="h-7 px-2 text-[10px] bg-zinc-800/50 text-zinc-400 border border-zinc-700/50 hover:bg-zinc-700">
+                          <Button 
+                            onClick={() => setConfirmFollowerId(null)} 
+                            variant="secondary"
+                            className="h-7 px-2.5 text-[11px] font-mono bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-700 hover:border-zinc-500 hover:bg-zinc-700"
+                          >
                             Cancel
                           </Button>
-                          <Button onClick={() => handleRemoveFollower(follower.uid)} className="h-7 px-2 text-[10px] bg-code-red/20 text-code-red border border-code-red/30 hover:bg-code-red/30">
+                          <Button 
+                            onClick={() => handleRemoveFollower(follower.uid)} 
+                            variant="danger"
+                            className="h-7 px-2.5 text-[11px] font-mono bg-[#c53030] text-white border border-red-500 hover:bg-red-700 hover:border-red-400 shadow-sm"
+                          >
                             Confirm
                           </Button>
                         </>
                       ) : (
-                        <Button onClick={() => handleRemoveFollower(follower.uid)} className="h-7 px-2 text-[10px] bg-zinc-800/50 text-zinc-400 border border-zinc-700/50 hover:bg-code-red/20 hover:text-code-red hover:border-code-red/30">
+                        <Button 
+                          onClick={() => handleRemoveFollower(follower.uid)} 
+                          variant="secondary"
+                          className="h-7 px-2.5 text-[11px] font-mono bg-zinc-800 text-zinc-300 hover:text-red-400 border border-zinc-700 hover:border-red-500/60 hover:bg-red-950/30 transition-colors"
+                        >
                           Remove
                         </Button>
                       )}
@@ -257,21 +290,33 @@ export const FriendsManager: React.FC = () => {
             <h3 className="text-sm font-mono uppercase tracking-widest text-zinc-400 flex items-center justify-between">
               Incoming Requests
               {incomingRequests.length > 0 && (
-                <span className="bg-[#c53030] text-white text-[10px] px-2 py-0.5 rounded-full">{incomingRequests.length}</span>
+                <span className="bg-[#c53030] text-white font-mono font-bold text-[10px] px-2 py-0.5 rounded-full shadow-sm">{incomingRequests.length}</span>
               )}
             </h3>
             {incomingRequests.length === 0 ? (
-              <p className="text-xs text-zinc-600 font-mono italic">No incoming requests.</p>
+              <p className="text-xs text-zinc-500 font-mono italic">No incoming requests.</p>
             ) : (
               <ul className="space-y-2">
                 {incomingRequests.map(req => (
                   <li key={req.id} className="flex flex-wrap gap-2 items-center justify-between p-3 bg-black/20 rounded-lg border border-[#c53030]/20">
-                    <Link to={`/user/${req.fromUsername}`} className="text-sm text-zinc-300 font-mono hover:text-white underline decoration-[#c53030]/50 underline-offset-4 break-all">
+                    <Link to={`/user/${req.fromUsername}`} className="text-sm text-zinc-200 font-mono hover:text-white underline decoration-[#c53030]/50 underline-offset-4 break-all">
                       @{req.fromUsername}
                     </Link>
                     <div className="flex gap-2">
-                      <Button onClick={() => handleRespond(req, true)} className="h-7 px-2 text-[10px] bg-[#c53030]/20 text-[#c53030] border border-[#c53030]/30 hover:bg-[#c53030]/30">Accept</Button>
-                      <Button onClick={() => handleRespond(req, false)} className="h-7 px-2 text-[10px] bg-code-red/20 text-code-red border border-code-red/30 hover:bg-code-red/30">Reject</Button>
+                      <Button 
+                        onClick={() => handleRespond(req, true)} 
+                        variant="secondary"
+                        className="h-7 px-3 text-[11px] font-mono bg-[#c53030] text-white font-semibold border border-red-500 hover:bg-red-700 hover:border-red-400 shadow-sm"
+                      >
+                        Accept
+                      </Button>
+                      <Button 
+                        onClick={() => handleRespond(req, false)} 
+                        variant="secondary"
+                        className="h-7 px-3 text-[11px] font-mono bg-zinc-800 text-zinc-300 hover:text-red-300 border border-zinc-700 hover:border-red-500/50 hover:bg-red-950/30 transition-colors"
+                      >
+                        Reject
+                      </Button>
                     </div>
                   </li>
                 ))}

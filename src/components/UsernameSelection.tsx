@@ -112,10 +112,11 @@ export const UsernameSelection: React.FC = () => {
           
           <Button 
             type="submit" 
+            variant="secondary"
             disabled={!username || loading}
-            className="w-full h-12 bg-zinc-900 border border-zinc-700 text-zinc-300 hover:text-white hover:border-[#c53030]/50 hover:bg-[#c53030]/10 transition-all font-mono uppercase tracking-widest text-xs mt-4"
+            className="w-full h-12 bg-zinc-900 border border-zinc-700 hover:border-[#c53030]/60 text-zinc-100 hover:text-white hover:bg-[#c53030] transition-all font-mono uppercase tracking-widest text-xs font-semibold mt-4 shadow-md cursor-pointer"
           >
-            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Claim Alias'}
+            {loading ? <Loader2 className="w-4 h-4 animate-spin text-white" /> : 'Claim Alias'}
           </Button>
         </form>
       </div>

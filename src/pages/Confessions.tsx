@@ -220,9 +220,9 @@ export const Confessions: React.FC = () => {
           <button
             type="submit"
             disabled={!text.trim() || submitting}
-            className="w-full py-4 bg-zinc-900 border border-zinc-800 text-zinc-300 rounded-2xl font-mono uppercase tracking-widest hover:bg-zinc-800 hover:text-white hover:border-[#c53030]/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 font-bold shadow-lg"
+            className="w-full py-4 bg-zinc-900 border border-zinc-700 hover:border-[#c53030]/80 text-zinc-100 hover:text-white rounded-2xl font-mono uppercase tracking-widest hover:bg-zinc-800 hover:shadow-[0_0_25px_-5px_rgba(197,48,48,0.4)] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 font-bold shadow-lg active:scale-[0.99] cursor-pointer"
           >
-            {submitting && <Loader2 className="w-5 h-5 animate-spin" />}
+            {submitting && <Loader2 className="w-5 h-5 animate-spin text-[#c53030]" />}
             Bury Confession
           </button>
         </form>
@@ -276,10 +276,11 @@ export const Confessions: React.FC = () => {
                       {isMine && (
                         <button 
                           onClick={() => handleDelete(confession.id)}
-                          className="absolute top-0 right-0 p-2 bg-black/80 rounded-full text-zinc-500 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100 z-10 shadow-xl border border-zinc-800 backdrop-blur-sm"
+                          className="absolute top-1 right-1 p-2 bg-zinc-950/90 rounded-full text-zinc-300 hover:text-white hover:bg-red-950/80 transition-colors opacity-80 sm:opacity-0 group-hover:opacity-100 z-10 shadow-xl border border-zinc-700 hover:border-red-500/70 backdrop-blur-sm cursor-pointer"
                           title="Delete your confession"
+                          aria-label="Delete confession"
                         >
-                          <Trash2 size={14} />
+                          <Trash2 size={14} className="text-zinc-300 hover:text-red-400" />
                         </button>
                       )}
                       

@@ -53,7 +53,8 @@ export const AvatarSelectionModal: React.FC<AvatarSelectionModalProps> = ({ onCl
       >
         <button 
           onClick={onClose}
-          className="absolute top-4 right-4 p-1 text-zinc-400 hover:text-white hover:bg-white/10 rounded-full transition-colors z-10"
+          className="absolute top-4 right-4 p-2 text-zinc-400 hover:text-white hover:bg-white/10 rounded-full transition-colors z-10 border border-transparent hover:border-zinc-700/60"
+          aria-label="Close avatar selection"
         >
           <X className="w-5 h-5" />
         </button>
@@ -72,23 +73,33 @@ export const AvatarSelectionModal: React.FC<AvatarSelectionModalProps> = ({ onCl
                 className={`relative aspect-square rounded-xl overflow-hidden border-2 transition-all duration-300 ${
                   selectedAvatar === avatar 
                     ? 'border-[#c53030] scale-105 shadow-[0_0_20px_rgba(223,54,54,0.4)]' 
-                    : 'border-zinc-800 hover:border-[#c53030]/50 hover:scale-105'
+                    : 'border-zinc-800 hover:border-[#c53030]/60 hover:scale-105'
                 }`}
               >
                 <img src={avatar} alt={`Avatar ${idx + 1}`} className="w-full h-full object-cover bg-zinc-950 p-1" />
                 {selectedAvatar === avatar && (
-                  <div className="absolute inset-0 bg-[#c53030]/10" />
+                  <div className="absolute inset-0 bg-[#c53030]/15" />
                 )}
               </button>
             ))}
           </div>
 
           <div className="flex justify-end gap-3 pt-4 border-t border-[#c53030]/20">
-            <Button variant="secondary" onClick={onClose} disabled={loading} className="text-zinc-400 hover:text-white">
+            <Button 
+              variant="secondary" 
+              onClick={onClose} 
+              disabled={loading} 
+              className="text-zinc-200 hover:text-white bg-zinc-900 hover:bg-zinc-800 border-zinc-700 hover:border-zinc-500 font-mono"
+            >
               Cancel
             </Button>
-            <Button onClick={handleSave} disabled={loading || !selectedAvatar || selectedAvatar === user?.photoURL} className="bg-[#c53030] hover:bg-[#c53030]/80 text-white min-w-[100px]">
-              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save Avatar'}
+            <Button 
+              variant="danger"
+              onClick={handleSave} 
+              disabled={loading || !selectedAvatar || selectedAvatar === user?.photoURL} 
+              className="bg-[#c53030] hover:bg-[#b02727] text-white font-mono font-semibold min-w-[120px] shadow-[0_0_15px_rgba(197,48,48,0.4)]"
+            >
+              {loading ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Save Avatar'}
             </Button>
           </div>
         </div>

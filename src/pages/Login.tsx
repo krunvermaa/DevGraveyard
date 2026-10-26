@@ -120,10 +120,10 @@ export const Login: React.FC = () => {
             onClick={() => handleLogin('google')}
             disabled={isLoggingIn !== false} 
             variant="secondary"
-            className="w-full h-12 flex items-center justify-center space-x-3 text-sm tracking-widest font-mono border border-zinc-700 hover:text-white hover:bg-zinc-800 hover:border-[#c53030]/50 transition-all shadow-lg"
+            className="w-full h-12 flex items-center justify-center space-x-3 text-sm tracking-widest font-mono text-zinc-100 hover:text-white bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-700 hover:border-[#c53030]/60 font-semibold transition-all shadow-lg"
           >
             {isLoggingIn === 'google' ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
+              <Loader2 className="w-5 h-5 animate-spin text-[#c53030]" />
             ) : (
               <GoogleIcon />
             )}
@@ -134,10 +134,10 @@ export const Login: React.FC = () => {
             onClick={() => handleLogin('github')}
             disabled={isLoggingIn !== false} 
             variant="secondary"
-            className="w-full h-12 flex items-center justify-center space-x-3 text-sm tracking-widest font-mono border border-zinc-700 hover:text-white hover:bg-zinc-800 hover:border-[#c53030]/50 transition-all shadow-lg"
+            className="w-full h-12 flex items-center justify-center space-x-3 text-sm tracking-widest font-mono text-zinc-100 hover:text-white bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-700 hover:border-[#c53030]/60 font-semibold transition-all shadow-lg"
           >
             {isLoggingIn === 'github' ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
+              <Loader2 className="w-5 h-5 animate-spin text-[#c53030]" />
             ) : (
               <GithubIcon />
             )}

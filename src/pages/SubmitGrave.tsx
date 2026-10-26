@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CauseOfDeath, GraveFormData, Grave } from '../types';
 import { submitGrave } from '../services/graveService';
-import { isValidGithubRepoUrl, calculateGraveScore, getGraveTier } from '../services/graveScoreService';
+import { isValidGithubRepoUrl, calculateGraveScore } from '../services/graveScoreService';
 import { Input } from '../components/ui/Input';
 import { Textarea } from '../components/ui/Textarea';
 import { Select } from '../components/ui/Select';
@@ -244,19 +244,11 @@ export const SubmitGrave: React.FC = () => {
           </label>
         </div>
 
-        {/* Estimated GraveScore & Tier Preview */}
+        {/* Estimated GraveScore */}
         {formData.project_name.trim().length > 0 && (
-          <div className="p-3.5 bg-black/40 border border-zinc-800 rounded-xl flex flex-wrap items-center justify-between gap-2 text-xs font-mono">
-            <span className="text-zinc-400 flex items-center gap-1.5">
-              <span>{getGraveTier(calculateGraveScore(previewGrave)).icon}</span>
-              <span>Estimated GraveScore:</span>
-            </span>
-            <div className="flex items-center gap-2">
-              <span className="text-white font-bold">{calculateGraveScore(previewGrave)} pts</span>
-              <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold border ${getGraveTier(calculateGraveScore(previewGrave)).badgeColor}`}>
-                {getGraveTier(calculateGraveScore(previewGrave)).name}
-              </span>
-            </div>
+          <div className="p-3 bg-black/40 border border-zinc-800 rounded-xl flex items-center justify-between text-xs font-mono">
+            <span className="text-zinc-400">Estimated GraveScore:</span>
+            <span className="text-red-400 font-bold">{calculateGraveScore(previewGrave)} pts</span>
           </div>
         )}
 

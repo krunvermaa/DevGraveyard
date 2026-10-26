@@ -15,12 +15,14 @@ interface SettingsModalProps {
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
-  const { user, userProfile } = useAuth();
+  const { user, userProfile, refreshProfile } = useAuth();
   const [newUsername, setNewUsername] = useState(userProfile?.username || '');
   const [isChangingUsername, setIsChangingUsername] = useState(false);
   const [usernameError, setUsernameError] = useState('');
   const [usernameSuccess, setUsernameSuccess] = useState('');
 
+  const [bio, setBio] = useState(userProfile?.bio || '');
+  const [github, setGithub] = useState(userProfile?.github || '');
   const [instagram, setInstagram] = useState(userProfile?.instagram || '');
   const [whatsapp, setWhatsapp] = useState(userProfile?.whatsapp || '');
   const [isUpdatingSocials, setIsUpdatingSocials] = useState(false);
@@ -43,16 +45,19 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
     try {
       const userRef = doc(db, 'users', user.uid);
       await updateDoc(userRef, {
+        bio: bio.trim(),
+        github: github.trim(),
         instagram: instagram.trim(),
         whatsapp: whatsapp.trim()
       });
-      setSocialsSuccess('Social links updated successfully!');
+      await refreshProfile();
+      setSocialsSuccess('Memorial profile & links updated!');
       setTimeout(() => {
         setSocialsSuccess('');
       }, 3000);
     } catch (err: any) {
       console.error(err);
-      setSocialsError('Failed to update social links.');
+      setSocialsError('Failed to update profile info.');
     } finally {
       setIsUpdatingSocials(false);
     }
@@ -169,14 +174,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
       >
         <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-zinc-800 via-zinc-600 to-zinc-800" />
         
-        <div className="p-6 md:p-8 space-y-8">
+        <div className="p-6 md:p-8 space-y-6 max-h-[85vh] overflow-y-auto custom-scrollbar">
           <div className="flex justify-between items-center">
             <h2 className="text-2xl font-bold font-sans text-zinc-100 tracking-tight">
               Settings
             </h2>
             <button 
               onClick={onClose}
-              className="text-zinc-500 hover:text-white transition-colors rounded-full hover:bg-white/5 p-2"
+              className="text-zinc-400 hover:text-white transition-colors rounded-full hover:bg-white/10 p-2 border border-transparent hover:border-zinc-700/60"
+              aria-label="Close settings"
             >
               <X className="w-5 h-5" />
             </button>
@@ -187,15 +193,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
               <h3 className="text-sm font-mono uppercase tracking-widest text-zinc-500 mb-4">Personal Details</h3>
               <div className="flex justify-between items-center text-sm">
                 <span className="text-zinc-400 font-mono">Email / Login</span>
-                <span className="text-zinc-200">{loginEmail}</span>
+                <span className="text-zinc-200 font-mono">{loginEmail}</span>
               </div>
               <div className="flex justify-between items-center text-sm">
                 <span className="text-zinc-400 font-mono">Current Username</span>
-                <span className="text-zinc-200">@{userProfile?.username || 'Unknown'}</span>
+                <span className="text-zinc-200 font-mono">@{userProfile?.username || 'Unknown'}</span>
               </div>
               <div className="flex justify-between items-center text-sm">
                 <span className="text-zinc-400 font-mono">Account Created</span>
-                <span className="text-zinc-200">{creationDate}</span>
+                <span className="text-zinc-200 font-mono">{creationDate}</span>
               </div>
             </div>
 
@@ -211,8 +217,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
                 />
                 <Button 
                   type="submit"
+                  variant="secondary"
                   disabled={isChangingUsername || newUsername === userProfile?.username}
-                  className="px-4 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border-zinc-700"
+                  className="px-4 bg-zinc-800 hover:bg-zinc-700 text-white font-mono border-zinc-700 hover:border-[#c53030]/60 font-semibold transition-all shadow-sm"
                 >
                   {isChangingUsername ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Update'}
                 </Button>
@@ -221,11 +228,73 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
               {usernameSuccess && <p className="text-xs text-green-400">{usernameSuccess}</p>}
             </form>
 
+            <form onSubmit={handleUpdateSocials} className="space-y-3 pb-4 border-b border-zinc-800/50">
+              <h3 className="text-sm font-mono uppercase tracking-widest text-zinc-500 mb-2">Memorial Bio & Socials</h3>
+              <div className="space-y-2">
+                <div>
+                  <label htmlFor="user_bio" className="block text-[11px] font-mono text-zinc-400 mb-1">Mortician Bio / Epitaph</label>
+                  <Input 
+                    id="user_bio"
+                    value={bio}
+                    onChange={(e) => setBio(e.target.value)}
+                    placeholder="E.g. Full-stack necromancer burying side-projects since 2020."
+                    maxLength={160}
+                    className="w-full bg-zinc-900 border-zinc-800 focus:border-zinc-700 text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="user_github" className="block text-[11px] font-mono text-zinc-400 mb-1">GitHub Username / URL</label>
+                  <Input 
+                    id="user_github"
+                    value={github}
+                    onChange={(e) => setGithub(e.target.value)}
+                    placeholder="octocat or https://github.com/octocat"
+                    className="w-full bg-zinc-900 border-zinc-800 focus:border-zinc-700 text-xs"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label htmlFor="user_instagram" className="block text-[11px] font-mono text-zinc-400 mb-1">Instagram</label>
+                    <Input 
+                      id="user_instagram"
+                      value={instagram}
+                      onChange={(e) => setInstagram(e.target.value)}
+                      placeholder="@handle"
+                      className="w-full bg-zinc-900 border-zinc-800 focus:border-zinc-700 text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="user_whatsapp" className="block text-[11px] font-mono text-zinc-400 mb-1">WhatsApp</label>
+                    <Input 
+                      id="user_whatsapp"
+                      value={whatsapp}
+                      onChange={(e) => setWhatsapp(e.target.value)}
+                      placeholder="+123456789"
+                      className="w-full bg-zinc-900 border-zinc-800 focus:border-zinc-700 text-xs"
+                    />
+                  </div>
+                </div>
+
+                <Button 
+                  type="submit"
+                  variant="secondary"
+                  disabled={isUpdatingSocials}
+                  className="w-full mt-2 bg-zinc-800 hover:bg-zinc-700 text-white font-mono border border-zinc-700 hover:border-[#c53030]/60 font-semibold transition-all py-2.5 shadow-sm"
+                >
+                  {isUpdatingSocials ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save Profile & Socials'}
+                </Button>
+              </div>
+              {socialsError && <p className="text-xs text-red-400">{socialsError}</p>}
+              {socialsSuccess && <p className="text-xs text-green-400">{socialsSuccess}</p>}
+            </form>
+
             <div className="space-y-3 pt-2">
               <Button 
                 onClick={handleLogout}
                 variant="secondary"
-                className="w-full flex justify-center items-center gap-2 border-zinc-800 bg-zinc-900 hover:bg-zinc-800 text-zinc-300"
+                className="w-full flex justify-center items-center gap-2 border border-zinc-700/80 bg-zinc-900/90 hover:bg-zinc-800 text-zinc-100 hover:text-white hover:border-zinc-500 font-mono tracking-wider font-semibold transition-all"
               >
                 <LogOut className="w-4 h-4" /> STEP BACK
               </Button>
@@ -237,14 +306,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
                     <Button 
                       onClick={handleDeleteAccount}
                       disabled={isDeleting}
-                      className="flex-1 bg-red-900/50 hover:bg-red-800/50 text-red-200 border-red-900"
+                      variant="danger"
+                      className="flex-1 bg-red-600 hover:bg-red-700 text-white font-mono font-bold border border-red-500 hover:border-red-400 shadow-md transition-all"
                     >
                       {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Confirm Delete'}
                     </Button>
                     <Button 
                       onClick={() => setIsConfirmingDelete(false)}
                       disabled={isDeleting}
-                      className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border-zinc-700"
+                      variant="secondary"
+                      className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 hover:text-white font-mono border-zinc-700 hover:border-zinc-500 transition-all"
                     >
                       Cancel
                     </Button>
@@ -253,7 +324,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
               ) : (
                 <Button 
                   onClick={() => setIsConfirmingDelete(true)}
-                  className="w-full flex justify-center items-center gap-2 border-red-900/30 bg-red-950/10 hover:bg-red-950/30 text-red-500 hover:text-red-400 hover:border-red-900/50 transition-all"
+                  variant="secondary"
+                  className="w-full flex justify-center items-center gap-2 border border-red-900/60 bg-red-950/25 hover:bg-red-900/40 text-red-400 hover:text-white hover:border-red-500 font-mono tracking-wider font-semibold transition-all"
                 >
                   <Trash2 className="w-4 h-4" /> ALIVE ME
                 </Button>

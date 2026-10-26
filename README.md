@@ -88,8 +88,8 @@ DevGraveyard/
 │   ├── components/       # UI primitives, GraveCard, GraveModal, ShareCards
 │   ├── contexts/         # AuthContext and user session
 │   ├── pages/            # Home, SubmitGrave, Profile, GraveView, Chats, Confessions
-│   ├── services/         # graveService, userService, postmortemService, accountService
-│   ├── types.ts          # Core schema interfaces (Grave, PostMortem, User, Eulogy)
+│   ├── services/         # graveService, userService, accountService
+│   ├── types.ts          # Core schema interfaces (Grave, User, Eulogy)
 │   ├── firebase.ts       # Firebase initialization from environment variables
 │   ├── pixelAvatars.ts   # Pixel art avatar library
 │   └── index.tsx         # React application entry point

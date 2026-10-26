@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User as FirebaseUser, onAuthStateChanged } from 'firebase/auth';
-import { auth } from '../firebase';
+import { auth, isFirebaseConfigured } from '../firebase';
 import { User as UserProfile } from '../types';
 import { getUserProfile } from '../services/userService';
 
@@ -11,7 +11,12 @@ interface AuthContextType {
   refreshProfile: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType>({ user: null, userProfile: null, loading: true, refreshProfile: async () => {} });
+const AuthContext = createContext<AuthContextType>({ 
+  user: null, 
+  userProfile: null, 
+  loading: true, 
+  refreshProfile: async () => {} 
+});
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<FirebaseUser | null>(null);
@@ -34,6 +39,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
+    if (!isFirebaseConfigured) {
+      setLoading(false);
+      return;
+    }
+
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       if (currentUser) {

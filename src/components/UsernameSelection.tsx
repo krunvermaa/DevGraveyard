@@ -8,7 +8,17 @@ import { updateProfile } from 'firebase/auth';
 
 export const UsernameSelection: React.FC = () => {
   const { user, refreshProfile } = useAuth();
-  const [username, setUsername] = useState('');
+  const [username, setUsername] = useState(() => {
+    if (user?.displayName) {
+      const sanitized = user.displayName.toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 30);
+      if (sanitized.length >= 3) return sanitized;
+    }
+    if (user?.email) {
+      const sanitized = user.email.split('@')[0].toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 30);
+      if (sanitized.length >= 3) return sanitized;
+    }
+    return '';
+  });
   const [selectedAvatar, setSelectedAvatar] = useState<string>(AVATARS[0]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { loginWithGithub, loginWithGoogle } from '../firebase';
-import { Loader2 } from 'lucide-react';
+import { loginWithGithub, loginWithGoogle, isFirebaseConfigured } from '../firebase';
+import { Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 
 const GithubIcon = () => (
@@ -28,7 +28,7 @@ const GoogleIcon = () => (
     xmlns="http://www.w3.org/2000/svg" 
     width="24" 
     height="24" 
-    viewBox="0 0 24 24"
+    viewBox="0 0 24 24" 
     fill="currentColor"
     className="w-5 h-5"
   >
@@ -65,15 +65,19 @@ export const Login: React.FC = () => {
       }
       navigate('/home');
     } catch (err: any) {
-      console.error(err);
-      setError(err.message || `Failed to login with ${provider === 'github' ? 'GitHub' : 'Google'}`);
+      if (err?.code === 'auth/popup-closed-by-user' || err?.code === 'auth/cancelled-popup-request') {
+        // User voluntarily dismissed the authentication window
+        return;
+      }
+      console.error('[Auth Error]', err);
+      setError(err?.message || `Failed to login with ${provider === 'github' ? 'GitHub' : 'Google'}`);
     } finally {
       setIsLoggingIn(false);
     }
   };
 
   return (
-    <div className="min-h-[80vh] flex flex-col items-center justify-center animate-fade-in relative z-10">
+    <div className="min-h-[80vh] flex flex-col items-center justify-center animate-fade-in relative z-10 px-4">
       <div className="max-w-md w-full space-y-8 p-8 border border-zinc-800 bg-surface/50 backdrop-blur-sm rounded-xl shadow-2xl relative overflow-hidden">
         
         {/* Subtle top glow */}
@@ -88,29 +92,24 @@ export const Login: React.FC = () => {
           </p>
         </div>
 
+        {!isFirebaseConfigured && (
+          <div className="p-3 bg-amber-950/40 border border-amber-600/40 rounded-lg text-amber-300 text-xs text-center font-mono flex items-center justify-center gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0 text-amber-400" />
+            <span>Setup needed: Add Firebase project credentials to <code className="text-amber-100 bg-black/40 px-1 py-0.5 rounded">.env.local</code></span>
+          </div>
+        )}
+
         {error && (
-          <div className="p-4 bg-red-900/20 border border-red-500/30 rounded-md text-red-400 text-sm text-center">
+          <div className="p-4 bg-red-900/20 border border-red-500/30 rounded-md text-red-400 text-sm text-center font-mono">
             {error}
           </div>
         )}
 
         <div className="space-y-4">
           <Button
-            onClick={() => handleLogin('github')}
-            disabled={isLoggingIn !== false} variant="secondary"
-            className="w-full h-12 flex items-center justify-center space-x-3 text-sm tracking-widest font-mono border border-zinc-700 hover:text-white hover:bg-zinc-800 hover:border-[#c53030]/50 transition-all shadow-lg"
-          >
-            {isLoggingIn === 'github' ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : (
-              <GithubIcon />
-            )}
-            <span>{isLoggingIn === 'github' ? 'Authenticating...' : 'Continue with GitHub'}</span>
-          </Button>
-
-          <Button
             onClick={() => handleLogin('google')}
-            disabled={isLoggingIn !== false} variant="secondary"
+            disabled={isLoggingIn !== false} 
+            variant="secondary"
             className="w-full h-12 flex items-center justify-center space-x-3 text-sm tracking-widest font-mono border border-zinc-700 hover:text-white hover:bg-zinc-800 hover:border-[#c53030]/50 transition-all shadow-lg"
           >
             {isLoggingIn === 'google' ? (
@@ -119,6 +118,20 @@ export const Login: React.FC = () => {
               <GoogleIcon />
             )}
             <span>{isLoggingIn === 'google' ? 'Authenticating...' : 'Continue with Google'}</span>
+          </Button>
+
+          <Button
+            onClick={() => handleLogin('github')}
+            disabled={isLoggingIn !== false} 
+            variant="secondary"
+            className="w-full h-12 flex items-center justify-center space-x-3 text-sm tracking-widest font-mono border border-zinc-700 hover:text-white hover:bg-zinc-800 hover:border-[#c53030]/50 transition-all shadow-lg"
+          >
+            {isLoggingIn === 'github' ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <GithubIcon />
+            )}
+            <span>{isLoggingIn === 'github' ? 'Authenticating...' : 'Continue with GitHub'}</span>
           </Button>
         </div>
       </div>

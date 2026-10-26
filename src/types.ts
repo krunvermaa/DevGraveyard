@@ -40,16 +40,6 @@ export interface Eulogy {
   created_at: string;
 }
 
-export interface PostMortem {
-  rootCauseHypothesis: string;
-  contributingFactors: string[];
-  warningSigns: string[];
-  preventionChecklist: string[];
-  evidence: string[];
-  confidence: 'high' | 'medium' | 'low';
-  generatedAt?: string;
-}
-
 export interface Grave {
   id: string;
   project_name: string;
@@ -66,7 +56,6 @@ export interface Grave {
   respects?: number;
   rips?: string[];
   eulogies?: Eulogy[];
-  postmortem?: PostMortem;
 }
 
 export type GraveFormData = Omit<Grave, 'id' | 'created_at' | 'user_id' | 'user_name' | 'respects' | 'eulogies'>;

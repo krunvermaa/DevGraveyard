@@ -25,14 +25,15 @@ service cloud.firestore {
 
     // Validation for Grave entity
     function isValidGrave(data) {
-      return data.project_name is string && data.project_name.size() <= 100 &&
+      return data.project_name is string && data.project_name.size() > 0 && data.project_name.size() <= 100 &&
              data.cause_of_death is string && data.cause_of_death.size() <= 100 &&
-             data.lesson_learned is string && data.lesson_learned.size() <= 1000 && (!data.keys().hasAny(["github_link"]) || (data.github_link is string && data.github_link.size() <= 500));
+             data.lesson_learned is string && data.lesson_learned.size() <= 5000 &&
+             (!data.keys().hasAny(["github_link"]) || (data.github_link is string && data.github_link.size() <= 500));
     }
 
     function isValidUser(data) {
       return data.keys().hasAll(['username']) &&
-             data.username is string && data.username.size() <= 30;
+             data.username is string && data.username.size() >= 3 && data.username.size() <= 30;
     }
 
     function isValidUsernameRegistry(data) {
@@ -55,12 +56,13 @@ service cloud.firestore {
     }
 
     match /graves/{graveId} {
-      // Allow read to authenticated users
-      allow read: if isSignedIn();
+      // Allow read to all (public memorial cemetery and leaderboard)
+      allow read: if true;
       // Allow create if user is signed in and provides valid grave data
       allow create: if isSignedIn() && isValidGrave(incoming());
-      // Allow updates to respects or eulogies for signed in users
+      // Allow updates to respects (press F) or eulogies for signed in users
       allow update: if isSignedIn();
+      // Allow delete only if the user owns the grave
       allow delete: if isSignedIn() && resource.data.user_id == request.auth.uid;
     }
 
@@ -72,7 +74,7 @@ service cloud.firestore {
 
       match /friends/{friendId} {
         allow read: if isSignedIn();
-        // User can add themselves to someone else's friend list if they are accepting a request,
+        // User can add themselves to someone else's friend list when accepting a request,
         // or add someone to their own list
         allow create: if isSignedIn() && (request.auth.uid == userId || request.auth.uid == friendId) && isValidFriend(incoming());
         allow update: if isSignedIn() && (request.auth.uid == userId || request.auth.uid == friendId);
@@ -87,17 +89,17 @@ service cloud.firestore {
         allow create, delete: if isSignedIn() && (request.auth.uid == userId || request.auth.uid == followingId);
       }
       match /shared_graves/{shareId} {
-        allow read: if isSignedIn() && request.auth.uid == userId;
-        // Anyone can share a grave with you (or we could enforce friendship, but we'll leave it simple for now)
+        allow read: if isSignedIn() && (request.auth.uid == userId || resource.data.fromUserId == request.auth.uid);
         allow create: if isSignedIn() && isValidSharedGrave(incoming()) && incoming().fromUserId == request.auth.uid;
-        allow delete: if isSignedIn() && request.auth.uid == userId;
+        allow update: if isSignedIn() && (request.auth.uid == userId || resource.data.fromUserId == request.auth.uid);
+        allow delete: if isSignedIn() && (request.auth.uid == userId || resource.data.fromUserId == request.auth.uid);
       }
     }
 
     match /usernames/{username} {
       allow read: if isSignedIn();
       allow create: if isSignedIn() && isValidUsernameRegistry(incoming()) && incoming().uid == request.auth.uid;
-      allow update: if true;
+      allow update: if isSignedIn() && (existing().uid == request.auth.uid || incoming().uid == request.auth.uid);
       allow delete: if isSignedIn() && existing().uid == request.auth.uid;
     }
 
@@ -107,11 +109,11 @@ service cloud.firestore {
       allow update: if isSignedIn() && (resource.data.fromUserId == request.auth.uid || resource.data.toUserId == request.auth.uid);
       allow delete: if isSignedIn() && (resource.data.fromUserId == request.auth.uid || resource.data.toUserId == request.auth.uid);
     }
+
     match /confessions/{confessionId} {
       allow read: if true;
       allow create: if incoming().text is string && incoming().text.size() <= 140;
-      allow update: if true;
-      allow delete: if true;
+      allow update, delete: if true;
     }
   }
 }

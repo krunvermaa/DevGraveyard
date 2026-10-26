@@ -1,15 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CauseOfDeath, GraveFormData, Grave, PostMortem } from '../types';
+import { CauseOfDeath, GraveFormData, Grave } from '../types';
 import { submitGrave } from '../services/graveService';
-import { generatePostMortem } from '../services/postmortemService';
 import { Input } from '../components/ui/Input';
 import { Textarea } from '../components/ui/Textarea';
 import { Select } from '../components/ui/Select';
 import { Button } from '../components/ui/Button';
 import { GraveCard } from '../components/GraveCard';
 import { useAuth } from '../contexts/AuthContext';
-import { Search, Sparkles, CheckCircle2, AlertTriangle, ShieldCheck, HelpCircle } from "lucide-react";
 import { GithubRepoPicker } from "../components/GithubRepoPicker";
 
 type SubmissionState = 'idle' | 'burying' | 'soul-rising' | 'complete';
@@ -29,8 +27,6 @@ export const SubmitGrave: React.FC = () => {
     is_anonymous: false
   });
 
-  const [previewPostMortem, setPreviewPostMortem] = useState<PostMortem | null>(null);
-  const [isGeneratingPostMortem, setIsGeneratingPostMortem] = useState(false);
   const [errors, setErrors] = useState<Partial<Record<keyof GraveFormData, string>>>({});
 
   const validate = () => {
@@ -43,28 +39,6 @@ export const SubmitGrave: React.FC = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleGeneratePreview = async () => {
-    if (!formData.lesson_learned.trim() || formData.lesson_learned.length < 10) {
-      setErrors({ ...errors, lesson_learned: "Write a short lesson first to extract insights." });
-      return;
-    }
-    setIsGeneratingPostMortem(true);
-    try {
-      const pm = await generatePostMortem({
-        projectName: formData.project_name || 'Upcoming Memorial',
-        causeOfDeath: formData.cause_of_death,
-        techStack: formData.tech_stack,
-        lessonLearned: formData.lesson_learned,
-        livedFor: formData.lived_for
-      });
-      setPreviewPostMortem(pm);
-    } catch (err) {
-      console.error("Failed to generate post-mortem", err);
-    } finally {
-      setIsGeneratingPostMortem(false);
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
@@ -73,17 +47,8 @@ export const SubmitGrave: React.FC = () => {
     setSubmissionState('burying');
     
     try {
-      // Ensure post-mortem is attached
-      const postmortem = previewPostMortem || await generatePostMortem({
-        projectName: formData.project_name,
-        causeOfDeath: formData.cause_of_death,
-        techStack: formData.tech_stack,
-        lessonLearned: formData.lesson_learned,
-        livedFor: formData.lived_for
-      });
-
       await submitGrave(
-        { ...formData, postmortem }, 
+        formData, 
         user?.uid, 
         userProfile?.username || undefined,
         userProfile?.photoURL || user?.photoURL || undefined
@@ -145,7 +110,7 @@ export const SubmitGrave: React.FC = () => {
               Project laid to rest.
             </h2>
             <p className="text-[#c53030] font-mono text-sm uppercase tracking-widest">
-              Failure Analyzed • Wisdom Preserved
+              May its code find peace in the eternal void.
             </p>
           </div>
         )}
@@ -157,7 +122,7 @@ export const SubmitGrave: React.FC = () => {
         
         <div className="absolute bottom-0 text-center w-full">
            {submissionState === 'burying' && (
-             <p className="text-xs font-mono text-zinc-400 uppercase tracking-widest animate-pulse">Burying the project and archiving post-mortem...</p>
+             <p className="text-xs font-mono text-zinc-400 uppercase tracking-widest animate-pulse">Burying the project...</p>
            )}
         </div>
       </div>
@@ -203,20 +168,9 @@ export const SubmitGrave: React.FC = () => {
         </div>
 
         <div>
-          <div className="flex items-center justify-between mb-2">
-            <label htmlFor="lesson_learned" className="text-xs font-mono tracking-widest uppercase text-zinc-400">
-              THE POST-MORTEM (LESSON LEARNED)
-            </label>
-            <button
-              type="button"
-              onClick={handleGeneratePreview}
-              disabled={isGeneratingPostMortem || !formData.lesson_learned.trim()}
-              className="inline-flex items-center gap-1.5 text-[11px] font-mono text-code-red hover:text-red-300 disabled:opacity-40 transition-colors cursor-pointer"
-            >
-              <Sparkles className="w-3.5 h-3.5" />
-              {isGeneratingPostMortem ? 'Analyzing...' : 'Preview Post-Mortem'}
-            </button>
-          </div>
+          <label htmlFor="lesson_learned" className="block text-xs font-mono tracking-widest uppercase text-zinc-400 mb-2">
+            THE LESSON LEARNED
+          </label>
           <Textarea 
             id="lesson_learned"
             placeholder="What actually went wrong? What would you do differently on your next build?"
@@ -226,53 +180,6 @@ export const SubmitGrave: React.FC = () => {
             rows={4}
           />
         </div>
-
-        {/* Interactive Post-Mortem Preview Card */}
-        {previewPostMortem && (
-          <div className="p-4 rounded-xl border border-code-red/30 bg-code-red/5 space-y-3 animate-fade-in text-left">
-            <div className="flex items-center justify-between border-b border-code-red/20 pb-2">
-              <span className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-code-red font-semibold">
-                <ShieldCheck className="w-4 h-4 text-code-red" />
-                Structured Post-Mortem Analysis
-              </span>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-zinc-900 border border-zinc-700 text-zinc-300">
-                Confidence: {previewPostMortem.confidence.toUpperCase()}
-              </span>
-            </div>
-
-            <div>
-              <p className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider">Root Cause Hypothesis</p>
-              <p className="text-sm font-sans text-zinc-200 mt-0.5">{previewPostMortem.rootCauseHypothesis}</p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
-              <div>
-                <p className="text-[11px] font-mono text-amber-400/90 flex items-center gap-1 uppercase tracking-wider">
-                  <AlertTriangle className="w-3 h-3" /> Warning Signs Missed
-                </p>
-                <ul className="text-xs text-zinc-400 space-y-1 mt-1 font-mono list-disc list-inside">
-                  {previewPostMortem.warningSigns.map((w, idx) => (
-                    <li key={idx} className="leading-relaxed">{w}</li>
-                  ))}
-                </ul>
-              </div>
-
-              <div>
-                <p className="text-[11px] font-mono text-code-green flex items-center gap-1 uppercase tracking-wider">
-                  <CheckCircle2 className="w-3 h-3" /> Prevention Checklist
-                </p>
-                <ul className="text-xs text-zinc-300 space-y-1 mt-1 font-mono">
-                  {previewPostMortem.preventionChecklist.map((item, idx) => (
-                    <li key={idx} className="flex items-start gap-1.5 leading-relaxed">
-                      <span className="text-code-green">✓</span>
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </div>
-        )}
 
         <Input 
           id="tech_stack"
@@ -319,10 +226,10 @@ export const SubmitGrave: React.FC = () => {
         <div className="pt-4">
           <Button 
             type="submit" 
-            className="w-full h-12 text-sm uppercase tracking-widest font-mono border border-zinc-700 bg-zinc-900 text-zinc-200 hover:text-white hover:bg-zinc-800 hover:border-code-red/40 transition-all duration-500"
+            className="w-full h-12 text-sm uppercase tracking-widest font-mono border border-zinc-700 bg-zinc-900 text-zinc-200 hover:text-white hover:bg-zinc-800 hover:border-code-red/40 transition-all duration-500 cursor-pointer"
             isLoading={false}
           >
-            Lay It to Rest & Archive Post-Mortem
+            Lay It to Rest
           </Button>
         </div>
       </form>

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CauseOfDeath, GraveFormData, Grave } from '../types';
 import { submitGrave } from '../services/graveService';
+import { isValidGithubRepoUrl, calculateGraveScore, getGraveTier } from '../services/graveScoreService';
 import { Input } from '../components/ui/Input';
 import { Textarea } from '../components/ui/Textarea';
 import { Select } from '../components/ui/Select';
@@ -35,6 +36,12 @@ export const SubmitGrave: React.FC = () => {
     if (!formData.lesson_learned.trim()) newErrors.lesson_learned = "Please share your wisdom.";
     if (formData.lesson_learned.length < 10) newErrors.lesson_learned = "Elaborate slightly more (at least 10 characters).";
     
+    if (formData.github_link && formData.github_link.trim() !== '') {
+      if (!isValidGithubRepoUrl(formData.github_link.trim())) {
+        newErrors.github_link = "Only valid GitHub repository links (e.g. https://github.com/username/repository) are permitted in the graveyard.";
+      }
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -71,7 +78,12 @@ export const SubmitGrave: React.FC = () => {
 
     } catch (error: any) {
       console.error('Failed to bury project', error);
-      setErrors({ ...errors, project_name: "Failed to bury project. Please check connectivity or try again." });
+      const msg = error?.message || "Failed to bury project. Please check connectivity or try again.";
+      if (msg.includes("GitHub")) {
+        setErrors(prev => ({ ...prev, github_link: msg }));
+      } else {
+        setErrors(prev => ({ ...prev, project_name: msg }));
+      }
       setSubmissionState('idle');
     }
   };
@@ -195,7 +207,13 @@ export const SubmitGrave: React.FC = () => {
             label="GITHUB REPOSITORY (OPTIONAL)"
             placeholder="https://github.com/username/repo"
             value={formData.github_link}
-            onChange={e => setFormData({...formData, github_link: e.target.value})}
+            onChange={e => {
+              setFormData({...formData, github_link: e.target.value});
+              if (errors.github_link) {
+                setErrors(prev => ({ ...prev, github_link: undefined }));
+              }
+            }}
+            error={errors.github_link}
             type="url"
           />
           <GithubRepoPicker 
@@ -206,6 +224,9 @@ export const SubmitGrave: React.FC = () => {
                 project_name: prev.project_name || name,
                 tech_stack: prev.tech_stack || (language || '')
               }));
+              if (errors.github_link) {
+                setErrors(prev => ({ ...prev, github_link: undefined }));
+              }
             }}
           />
         </div>
@@ -223,11 +244,28 @@ export const SubmitGrave: React.FC = () => {
           </label>
         </div>
 
+        {/* Estimated GraveScore & Tier Preview */}
+        {formData.project_name.trim().length > 0 && (
+          <div className="p-3.5 bg-black/40 border border-zinc-800 rounded-xl flex flex-wrap items-center justify-between gap-2 text-xs font-mono">
+            <span className="text-zinc-400 flex items-center gap-1.5">
+              <span>{getGraveTier(calculateGraveScore(previewGrave)).icon}</span>
+              <span>Estimated GraveScore:</span>
+            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-white font-bold">{calculateGraveScore(previewGrave)} pts</span>
+              <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold border ${getGraveTier(calculateGraveScore(previewGrave)).badgeColor}`}>
+                {getGraveTier(calculateGraveScore(previewGrave)).name}
+              </span>
+            </div>
+          </div>
+        )}
+
         <div className="pt-4">
           <Button 
             type="submit" 
-            className="w-full h-12 text-sm uppercase tracking-widest font-mono border border-zinc-700 bg-zinc-900 text-zinc-200 hover:text-white hover:bg-zinc-800 hover:border-code-red/40 transition-all duration-500 cursor-pointer"
-            isLoading={false}
+            variant="danger"
+            className="w-full h-12 text-sm uppercase tracking-widest font-mono font-bold bg-[#c53030] hover:bg-[#b02727] text-white border border-red-500 hover:border-red-400 shadow-[0_0_20px_rgba(197,48,48,0.4)] hover:shadow-[0_0_30px_rgba(197,48,48,0.6)] transition-all cursor-pointer"
+            isLoading={submissionState !== 'idle'}
           >
             Lay It to Rest
           </Button>
@@ -238,7 +276,7 @@ export const SubmitGrave: React.FC = () => {
         <button 
           type="button" 
           onClick={() => navigate('/home')} 
-          className="text-xs font-mono text-zinc-400 hover:text-zinc-200 transition-colors uppercase tracking-widest border-b border-transparent hover:border-zinc-500 pb-0.5 cursor-pointer"
+          className="text-xs font-mono text-zinc-300 hover:text-white hover:border-[#c53030]/60 transition-colors uppercase tracking-widest border-b border-transparent hover:border-zinc-500 pb-0.5 cursor-pointer"
         >
           [ Cancel and Return to Graveyard ]
         </button>

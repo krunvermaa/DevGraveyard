@@ -1,6 +1,7 @@
 import { Grave, GraveFormData, Eulogy } from '../types';
 import { db } from '../firebase';
 import { collection, getDoc, getDocs, addDoc, query, orderBy, where, doc, updateDoc, increment, arrayUnion, deleteDoc, arrayRemove } from 'firebase/firestore';
+import { isValidGithubRepoUrl } from './graveScoreService';
 
 const GRAVES_COLLECTION = 'graves';
 
@@ -46,8 +47,16 @@ export const getUserGraves = async (userId: string): Promise<Grave[]> => {
 };
 
 export const submitGrave = async (data: GraveFormData, userId?: string, userName?: string, userAvatar?: string): Promise<Grave> => {
+  const trimmedGithubLink = data.github_link?.trim();
+  if (trimmedGithubLink) {
+    if (!isValidGithubRepoUrl(trimmedGithubLink)) {
+      throw new Error("Only valid GitHub repository links (e.g. https://github.com/username/repository) are permitted in the graveyard.");
+    }
+  }
+
   const newGraveData = {
     ...data,
+    github_link: trimmedGithubLink || '',
     created_at: new Date().toISOString(),
     ...(userId && { user_id: userId }),
     ...(userName && !data.is_anonymous && { user_name: userName }),
@@ -114,4 +123,16 @@ export const deleteEulogy = async (graveId: string, eulogy: Eulogy): Promise<voi
 export const deleteGrave = async (graveId: string): Promise<void> => {
   const graveRef = doc(db, GRAVES_COLLECTION, graveId);
   await deleteDoc(graveRef);
+};
+
+export const updateResurrectionStatus = async (
+  graveId: string, 
+  isResurrected: boolean, 
+  resurrectionNote?: string
+): Promise<void> => {
+  const graveRef = doc(db, GRAVES_COLLECTION, graveId);
+  await updateDoc(graveRef, {
+    is_resurrected: isResurrected,
+    resurrection_note: resurrectionNote || ''
+  });
 };

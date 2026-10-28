@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { GitFork, Radio, Database, Flame, CheckCircle2 } from 'lucide-react';
+import { Share2, FileCode2, GitFork, ShieldAlert, CheckCircle2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 interface UpcomingFeature {
@@ -14,31 +14,31 @@ interface UpcomingFeature {
 const UPCOMING_FEATURES: UpcomingFeature[] = [
   {
     number: '1',
-    title: 'Ghost Bounty & Adoption Exchange',
-    subtitle: 'Transfer custody of abandoned repositories to new open-source maintainers',
-    description: 'Don\'t let brilliant ideas rot forever. Post your abandoned project on the Ghost Exchange to transfer repository ownership, issue bounties, and pass the torch to developers eager to adopt and maintain the code.',
-    icon: GitFork
+    title: 'LinkedIn Post-Mortem & Mistake Analysis',
+    subtitle: 'Turn project failures into career-defining technical post-mortems',
+    description: 'Automated retrospective generator that parses your cause-of-death, tech stack, and lessons learned into polished, thoughtful engineering post-mortems ready for LinkedIn and developer networks.',
+    icon: Share2
   },
   {
     number: '2',
-    title: 'Post-Mortem Audio Vigils',
-    subtitle: 'Synchronized developer audio retrospectives and laid-to-rest discussions',
-    description: 'Gather around the digital crypt after dark. Ambient developer rooms, post-mortem reflections, and community voice discussions for legendary projects being laid to rest.',
-    icon: Radio
+    title: 'AI Codebase Autopsy & Utility Salvager',
+    subtitle: 'Excavate reusable code snippets, helper functions, and configs',
+    description: 'Intelligent code archeology that scans dead repositories to identify, extract, and clean standalone utility functions, Docker configs, and architecture patterns so valuable work is never truly lost.',
+    icon: FileCode2
   },
   {
     number: '3',
-    title: 'Permanent Decentralized Archive',
-    subtitle: 'Immutable repository snapshots and release preservation',
-    description: 'Ensure open-source immortality. Export and store tamper-proof decentralized archives of your dead project\'s commit history, documentation, and releases before GitHub accounts or servers go dark.',
-    icon: Database
+    title: 'Ghost Bounty & Adoption Exchange',
+    subtitle: 'Transfer ownership of abandoned repositories to eager new maintainers',
+    description: 'A collaborative adoption platform allowing creators to pass project custody to developers wanting to revive, maintain, or sponsor stalled open-source ideas.',
+    icon: GitFork
   },
   {
     number: '4',
-    title: 'Resurrection Grants & Bounties',
-    subtitle: 'Community-funded bounties to revive and modernize dead tools',
-    description: 'Community members can place resurrection bounties on beloved dead tools, encouraging active developers to modernize the stack, fix open issues, and publish revived versions.',
-    icon: Flame
+    title: 'Project Survival Guide & Anti-Pattern Prevention',
+    subtitle: 'Battle-tested architectural heuristics to prevent future project deaths',
+    description: 'Interactive failure post-mortem guide breaking down top causes of death (scope creep, infrastructure burnout, premature monetization) with preventative checklists.',
+    icon: ShieldAlert
   }
 ];
 

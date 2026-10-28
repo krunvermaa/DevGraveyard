@@ -16,9 +16,12 @@ import {
   List, 
   ArrowUpRight, 
   ArrowDownLeft, 
-  Ghost 
+  Ghost,
+  Send
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { syncPastSentGraves } from '../services/userService';
+import { DispatchGraveModal } from './DispatchGraveModal';
 
 interface NormalizedDispatch extends SharedGrave {
   direction: 'sent' | 'received';
@@ -29,6 +32,7 @@ interface NormalizedDispatch extends SharedGrave {
 interface SharedGravesViewerProps {
   onSelectGrave: (graveId: string) => void;
   loadingGraveId?: string | null;
+  onOpenDispatchModal?: () => void;
 }
 
 function formatDispatchDate(dateStr: string): string {
@@ -68,17 +72,36 @@ function getInitials(username: string): string {
 
 export const SharedGravesViewer: React.FC<SharedGravesViewerProps> = ({ 
   onSelectGrave, 
-  loadingGraveId 
+  loadingGraveId,
+  onOpenDispatchModal
 }) => {
-  const { user } = useAuth();
+  const { user, userProfile } = useAuth();
   const [dispatches, setDispatches] = useState<NormalizedDispatch[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isInternalDispatchOpen, setIsInternalDispatchOpen] = useState(false);
 
   // Filters & display state
   const [activeTab, setActiveTab] = useState<'all' | 'received' | 'sent'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'list' | 'grouped'>('list');
   const [collapsedUsers, setCollapsedUsers] = useState<Record<string, boolean>>({});
+
+  const handleOpenDispatch = () => {
+    if (onOpenDispatchModal) {
+      onOpenDispatchModal();
+    } else {
+      setIsInternalDispatchOpen(true);
+    }
+  };
+
+  // Backward compatibility: sync past sent graves from friends' shared_graves
+  useEffect(() => {
+    if (!user) return;
+    const currentUsername = userProfile?.username || user.displayName || 'Cryptkeeper';
+    syncPastSentGraves(user.uid, currentUsername).catch(err => {
+      console.warn("Sent graves background sync notice:", err);
+    });
+  }, [user, userProfile]);
 
   useEffect(() => {
     if (!user) {
@@ -91,7 +114,7 @@ export const SharedGravesViewer: React.FC<SharedGravesViewerProps> = ({
     const unsubscribe = onSnapshot(
       sharedRef, 
       (snapshot) => {
-        const items: NormalizedDispatch[] = snapshot.docs.map(doc => {
+        const rawItems: NormalizedDispatch[] = snapshot.docs.map(doc => {
           const data = doc.data() as Omit<SharedGrave, 'id'>;
           
           // Gracefully handle existing records where direction might not be set
@@ -114,6 +137,15 @@ export const SharedGravesViewer: React.FC<SharedGravesViewerProps> = ({
             friendUsername,
             friendUid,
           };
+        });
+
+        // Deduplicate in case sync created a new doc that overlaps an older record
+        const seen = new Set<string>();
+        const items = rawItems.filter(item => {
+          const dedupKey = `${item.direction}_${item.graveId}_${item.friendUid}_${item.createdAt?.slice(0, 16) || ''}`;
+          if (seen.has(dedupKey)) return false;
+          seen.add(dedupKey);
+          return true;
         });
 
         // Sort descending by createdAt
@@ -225,32 +257,97 @@ export const SharedGravesViewer: React.FC<SharedGravesViewerProps> = ({
           </div>
         </div>
 
-        {/* Stats Counter Badges */}
+        {/* Stats Counter Filter Buttons & Quick Action */}
         <div className="flex items-center gap-2 font-mono text-xs flex-wrap">
-          <div className="px-3 py-1.5 rounded-xl bg-zinc-900/80 border border-zinc-800 text-zinc-300 flex items-center gap-2 shadow-sm">
-            <span className="text-zinc-500 uppercase tracking-wider text-[10px]">All</span>
-            <span className="px-1.5 py-0.5 rounded-md bg-zinc-800 text-white font-bold text-xs">{stats.total}</span>
-          </div>
-          <div className="px-3 py-1.5 rounded-xl bg-red-950/20 border border-red-900/40 text-red-300 flex items-center gap-2 shadow-sm">
+          {/* ALL Badge Filter Button */}
+          <button
+            type="button"
+            onClick={() => setActiveTab('all')}
+            className={`px-3 py-1.5 rounded-xl border transition-all cursor-pointer flex items-center gap-2 shadow-sm select-none touch-manipulation active:scale-95 ${
+              activeTab === 'all'
+                ? 'bg-[#c53030]/25 border-[#c53030]/80 text-white font-bold shadow-[0_0_14px_rgba(197,48,48,0.35)] ring-1 ring-[#c53030]/60'
+                : 'bg-zinc-900/80 border-zinc-800 text-zinc-300 hover:border-zinc-700 hover:text-white'
+            }`}
+            title="Filter by all dispatches"
+            aria-pressed={activeTab === 'all'}
+          >
+            <span className={`uppercase tracking-wider text-[10px] ${activeTab === 'all' ? 'text-red-300 font-bold' : 'text-zinc-500'}`}>
+              All
+            </span>
+            <span className={`px-1.5 py-0.5 rounded-md font-bold text-xs transition-colors ${
+              activeTab === 'all' ? 'bg-[#c53030] text-white shadow-sm' : 'bg-zinc-800 text-white'
+            }`}>
+              {stats.total}
+            </span>
+          </button>
+
+          {/* RECEIVED Badge Filter Button */}
+          <button
+            type="button"
+            onClick={() => setActiveTab('received')}
+            className={`px-3 py-1.5 rounded-xl border transition-all cursor-pointer flex items-center gap-2 shadow-sm select-none touch-manipulation active:scale-95 ${
+              activeTab === 'received'
+                ? 'bg-red-950/40 border-red-500/80 text-red-200 font-bold shadow-[0_0_14px_rgba(197,48,48,0.35)] ring-1 ring-red-500/60'
+                : 'bg-red-950/20 border-red-900/40 text-red-300/80 hover:border-red-900/70 hover:text-red-200'
+            }`}
+            title="Filter by received dispatches"
+            aria-pressed={activeTab === 'received'}
+          >
             <ArrowDownLeft className="w-3.5 h-3.5 text-red-400" />
-            <span className="text-red-400 uppercase tracking-wider text-[10px]">Received</span>
-            <span className="px-1.5 py-0.5 rounded-md bg-red-900/40 text-red-200 font-bold text-xs">{stats.received}</span>
-          </div>
-          <div className="px-3 py-1.5 rounded-xl bg-zinc-900/80 border border-zinc-800 text-zinc-300 flex items-center gap-2 shadow-sm">
+            <span className="text-red-400 uppercase tracking-wider text-[10px] font-bold">
+              Received
+            </span>
+            <span className={`px-1.5 py-0.5 rounded-md font-bold text-xs transition-colors ${
+              activeTab === 'received' ? 'bg-red-600 text-white shadow-sm' : 'bg-red-900/40 text-red-200'
+            }`}>
+              {stats.received}
+            </span>
+          </button>
+
+          {/* SENT Badge Filter Button */}
+          <button
+            type="button"
+            onClick={() => setActiveTab('sent')}
+            className={`px-3 py-1.5 rounded-xl border transition-all cursor-pointer flex items-center gap-2 shadow-sm select-none touch-manipulation active:scale-95 ${
+              activeTab === 'sent'
+                ? 'bg-[#c53030]/25 border-[#c53030]/80 text-white font-bold shadow-[0_0_14px_rgba(197,48,48,0.35)] ring-1 ring-[#c53030]/60'
+                : 'bg-zinc-900/80 border-zinc-800 text-zinc-300 hover:border-zinc-700 hover:text-white'
+            }`}
+            title="Filter by sent dispatches"
+            aria-pressed={activeTab === 'sent'}
+          >
             <ArrowUpRight className="w-3.5 h-3.5 text-zinc-400" />
-            <span className="text-zinc-400 uppercase tracking-wider text-[10px]">Sent</span>
-            <span className="px-1.5 py-0.5 rounded-md bg-zinc-800 text-white font-bold text-xs">{stats.sent}</span>
-          </div>
+            <span className={`uppercase tracking-wider text-[10px] ${activeTab === 'sent' ? 'text-red-300 font-bold' : 'text-zinc-400'}`}>
+              Sent
+            </span>
+            <span className={`px-1.5 py-0.5 rounded-md font-bold text-xs transition-colors ${
+              activeTab === 'sent' ? 'bg-[#c53030] text-white shadow-sm' : 'bg-zinc-800 text-white'
+            }`}>
+              {stats.sent}
+            </span>
+          </button>
+
+          {/* Quick Action Button: Dispatch Grave */}
+          <button
+            type="button"
+            onClick={handleOpenDispatch}
+            className="px-3.5 py-1.5 rounded-xl bg-[#c53030]/20 hover:bg-[#c53030]/30 border border-[#c53030]/50 hover:border-[#c53030] text-red-300 hover:text-white text-xs font-mono font-bold tracking-wider transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(197,48,48,0.2)] cursor-pointer whitespace-nowrap active:scale-95 select-none touch-manipulation"
+            title="Dispatch a tombstone to a comrade"
+          >
+            <Send className="w-3.5 h-3.5 text-red-400" />
+            <span>[ + Dispatch Grave ]</span>
+          </button>
         </div>
       </div>
 
       {/* Control Bar: Filter Tabs, Search & View Toggle */}
       <div className="flex flex-col lg:flex-row gap-3 items-stretch lg:items-center justify-between">
         {/* Tabs / Filter Toggle */}
-        <div className="flex items-center gap-1 bg-zinc-950/70 p-1 rounded-xl border border-zinc-800/80 self-start sm:self-auto overflow-x-auto max-w-full">
+        <div className="flex items-center gap-1 bg-zinc-950/70 p-1 rounded-xl border border-zinc-800/80 self-start sm:self-auto overflow-x-auto max-w-full touch-pan-x">
           <button
+            type="button"
             onClick={() => setActiveTab('all')}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-mono transition-all cursor-pointer flex items-center gap-2 whitespace-nowrap ${
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-mono transition-all cursor-pointer flex items-center gap-2 whitespace-nowrap select-none touch-manipulation ${
               activeTab === 'all'
                 ? 'bg-[#c53030]/20 border border-[#c53030]/60 text-white font-bold shadow-[0_0_12px_rgba(197,48,48,0.25)]'
                 : 'text-zinc-400 hover:text-zinc-200 border border-transparent'
@@ -260,8 +357,9 @@ export const SharedGravesViewer: React.FC<SharedGravesViewerProps> = ({
             <span className="px-1.5 py-0.2 rounded bg-black/50 text-[10px] text-zinc-300 font-mono">{stats.total}</span>
           </button>
           <button
+            type="button"
             onClick={() => setActiveTab('received')}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-mono transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-mono transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap select-none touch-manipulation ${
               activeTab === 'received'
                 ? 'bg-[#c53030]/20 border border-[#c53030]/60 text-white font-bold shadow-[0_0_12px_rgba(197,48,48,0.25)]'
                 : 'text-zinc-400 hover:text-zinc-200 border border-transparent'
@@ -272,8 +370,9 @@ export const SharedGravesViewer: React.FC<SharedGravesViewerProps> = ({
             <span className="px-1.5 py-0.2 rounded bg-black/50 text-[10px] text-red-300 font-mono">{stats.received}</span>
           </button>
           <button
+            type="button"
             onClick={() => setActiveTab('sent')}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-mono transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-mono transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap select-none touch-manipulation ${
               activeTab === 'sent'
                 ? 'bg-[#c53030]/20 border border-[#c53030]/60 text-white font-bold shadow-[0_0_12px_rgba(197,48,48,0.25)]'
                 : 'text-zinc-400 hover:text-zinc-200 border border-transparent'
@@ -298,6 +397,7 @@ export const SharedGravesViewer: React.FC<SharedGravesViewerProps> = ({
             />
             {searchQuery && (
               <button
+                type="button"
                 onClick={() => setSearchQuery('')}
                 className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white p-0.5 cursor-pointer"
                 title="Clear search"
@@ -310,6 +410,7 @@ export const SharedGravesViewer: React.FC<SharedGravesViewerProps> = ({
           {/* View Mode Toggle: Timeline vs By Friend */}
           <div className="flex items-center bg-zinc-950/70 border border-zinc-800/80 rounded-xl p-1 shrink-0">
             <button
+              type="button"
               onClick={() => setViewMode('list')}
               className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
                 viewMode === 'list'
@@ -321,6 +422,7 @@ export const SharedGravesViewer: React.FC<SharedGravesViewerProps> = ({
               <List className="w-4 h-4" />
             </button>
             <button
+              type="button"
               onClick={() => setViewMode('grouped')}
               className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
                 viewMode === 'grouped'
@@ -345,15 +447,25 @@ export const SharedGravesViewer: React.FC<SharedGravesViewerProps> = ({
           <div className="space-y-1.5 max-w-md">
             <h3 className="text-xl font-bold font-sans text-zinc-100">The Crypt Is Silent</h3>
             <p className="text-xs font-mono text-zinc-500 leading-relaxed">
-              No dispatches have traversed the veil yet. Visit any tombstone in the cemetery and select "Share with Friend" to dispatch a grave.
+              No dispatches have traversed the veil yet. Dispatch a tombstone to a comrade or explore cemetery graves.
             </p>
           </div>
-          <Link
-            to="/"
-            className="mt-2 px-5 py-2.5 rounded-xl bg-[#c53030]/20 text-red-300 border border-[#c53030]/40 text-xs font-mono hover:bg-[#c53030]/30 transition-colors uppercase tracking-widest shadow-[0_0_15px_rgba(197,48,48,0.2)]"
-          >
-            [ Explore Cemetery Graves ]
-          </Link>
+          <div className="flex items-center gap-3 flex-wrap justify-center pt-2">
+            <button
+              type="button"
+              onClick={handleOpenDispatch}
+              className="px-5 py-2.5 rounded-xl bg-[#c53030] text-white hover:bg-red-700 text-xs font-mono font-bold transition-all uppercase tracking-wider shadow-[0_0_20px_rgba(197,48,48,0.35)] cursor-pointer flex items-center gap-2 active:scale-95"
+            >
+              <Send className="w-4 h-4" />
+              <span>[ Dispatch a Grave ]</span>
+            </button>
+            <Link
+              to="/"
+              className="px-5 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 text-xs font-mono transition-colors uppercase tracking-wider"
+            >
+              [ Explore Cemetery Graves ]
+            </Link>
+          </div>
         </div>
       ) : filteredDispatches.length === 0 ? (
         /* Filtered Empty State */
@@ -373,12 +485,35 @@ export const SharedGravesViewer: React.FC<SharedGravesViewerProps> = ({
                 : 'You have not dispatched any tombs to comrades yet.'}
             </p>
           </div>
-          <button
-            onClick={() => { setSearchQuery(''); setActiveTab('all'); }}
-            className="mt-2 text-xs font-mono text-red-400 hover:text-red-300 underline underline-offset-4 cursor-pointer"
-          >
-            Clear filters & view all dispatches
-          </button>
+
+          {/* Action button when Sent tab is active with 0 sent graves */}
+          {activeTab === 'sent' && !searchQuery ? (
+            <div className="pt-2 flex flex-col items-center gap-2">
+              <button
+                type="button"
+                onClick={handleOpenDispatch}
+                className="px-5 py-2.5 rounded-xl bg-[#c53030]/20 hover:bg-[#c53030]/30 text-red-300 hover:text-white border border-[#c53030]/50 hover:border-[#c53030] text-xs font-mono font-bold tracking-wider transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(197,48,48,0.25)] cursor-pointer active:scale-95"
+              >
+                <Send className="w-4 h-4 text-red-400" />
+                <span>[ Dispatch a Grave to Comrade ]</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => { setSearchQuery(''); setActiveTab('all'); }}
+                className="text-xs font-mono text-zinc-500 hover:text-zinc-300 underline underline-offset-4 cursor-pointer mt-1"
+              >
+                View all dispatches instead
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => { setSearchQuery(''); setActiveTab('all'); }}
+              className="mt-2 text-xs font-mono text-red-400 hover:text-red-300 underline underline-offset-4 cursor-pointer"
+            >
+              Clear filters & view all dispatches
+            </button>
+          )}
         </div>
       ) : viewMode === 'list' ? (
         /* Timeline List View */
@@ -498,6 +633,7 @@ export const SharedGravesViewer: React.FC<SharedGravesViewerProps> = ({
               >
                 {/* Group Accordion Header */}
                 <button
+                  type="button"
                   onClick={() => toggleUserCollapse(username)}
                   className="w-full p-4 flex items-center justify-between hover:bg-zinc-900/50 transition-colors text-left cursor-pointer"
                 >
@@ -603,6 +739,12 @@ export const SharedGravesViewer: React.FC<SharedGravesViewerProps> = ({
           })}
         </div>
       )}
+
+      {/* Internal Dispatch Grave Modal (Fallback if parent doesn't control modal) */}
+      <DispatchGraveModal
+        isOpen={isInternalDispatchOpen}
+        onClose={() => setIsInternalDispatchOpen(false)}
+      />
     </div>
   );
 };

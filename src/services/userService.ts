@@ -127,16 +127,19 @@ export const shareGraveWithFriend = async (
 ): Promise<void> => {
   const batch = writeBatch(db);
   const createdAt = new Date().toISOString();
+  const safeFromUsername = fromUsername?.trim() || 'Cryptkeeper';
+  const safeToUsername = toUsername?.trim() || 'Friend';
+  const safeGraveName = graveName?.trim() || 'Tombstone';
 
   // Recipient copy (received)
   const recipientShareRef = doc(collection(db, 'users', toUserId, 'shared_graves'));
   batch.set(recipientShareRef, {
     graveId,
-    graveName,
+    graveName: safeGraveName,
     fromUserId,
-    fromUsername,
+    fromUsername: safeFromUsername,
     toUserId,
-    toUsername,
+    toUsername: safeToUsername,
     direction: 'received',
     createdAt
   });
@@ -145,16 +148,127 @@ export const shareGraveWithFriend = async (
   const senderShareRef = doc(collection(db, 'users', fromUserId, 'shared_graves'));
   batch.set(senderShareRef, {
     graveId,
-    graveName,
+    graveName: safeGraveName,
     fromUserId,
-    fromUsername,
+    fromUsername: safeFromUsername,
     toUserId,
-    toUsername,
+    toUsername: safeToUsername,
     direction: 'sent',
     createdAt
   });
 
   await batch.commit();
+};
+
+/**
+ * Synchronize any graves shared by the user in older versions of the app where
+ * dispatches were only recorded in the recipient's subcollection (users/{recipientUid}/shared_graves).
+ * Firestore rules allow the sender to read where resource.data.fromUserId == request.auth.uid.
+ */
+export const syncPastSentGraves = async (
+  currentUserId: string,
+  currentUsername: string
+): Promise<number> => {
+  if (!currentUserId) return 0;
+
+  try {
+    // 1. Gather all friend UIDs
+    const friendsSnap = await getDocs(collection(db, 'users', currentUserId, 'friends'));
+    const friendsMap = new Map<string, string>();
+    friendsSnap.docs.forEach(d => {
+      friendsMap.set(d.id, d.data().username || 'Friend');
+    });
+
+    // Also gather friends from accepted friend requests for full coverage
+    try {
+      const qFrom = query(
+        collection(db, 'friend_requests'),
+        where('fromUserId', '==', currentUserId),
+        where('status', '==', 'accepted')
+      );
+      const qTo = query(
+        collection(db, 'friend_requests'),
+        where('toUserId', '==', currentUserId),
+        where('status', '==', 'accepted')
+      );
+      const [fromSnaps, toSnaps] = await Promise.all([getDocs(qFrom), getDocs(qTo)]);
+      fromSnaps.docs.forEach(d => {
+        const data = d.data();
+        if (data.toUserId && !friendsMap.has(data.toUserId)) {
+          friendsMap.set(data.toUserId, data.toUsername || 'Friend');
+        }
+      });
+      toSnaps.docs.forEach(d => {
+        const data = d.data();
+        if (data.fromUserId && !friendsMap.has(data.fromUserId)) {
+          friendsMap.set(data.fromUserId, data.fromUsername || 'Friend');
+        }
+      });
+    } catch {
+      // Non-critical, continue with friends
+    }
+
+    if (friendsMap.size === 0) return 0;
+
+    // 2. Fetch existing sent dispatches in current user's collection to avoid duplicates
+    const userSharesSnap = await getDocs(
+      collection(db, 'users', currentUserId, 'shared_graves')
+    );
+    const existingKeys = new Set<string>();
+    userSharesSnap.docs.forEach(d => {
+      const data = d.data();
+      const isSent = data.direction ? data.direction === 'sent' : data.fromUserId === currentUserId;
+      if (isSent && data.graveId) {
+        existingKeys.add(`${data.graveId}_${data.toUserId || ''}`);
+      }
+      existingKeys.add(d.id);
+    });
+
+    let syncedCount = 0;
+
+    // 3. For each friend, query documents where fromUserId == currentUserId
+    for (const [friendUid, friendUsername] of friendsMap.entries()) {
+      try {
+        const friendSharesQuery = query(
+          collection(db, 'users', friendUid, 'shared_graves'),
+          where('fromUserId', '==', currentUserId)
+        );
+        const friendSharesSnap = await getDocs(friendSharesQuery);
+
+        for (const shareDoc of friendSharesSnap.docs) {
+          const shareData = shareDoc.data();
+          const deterministicDocId = `sent_${friendUid}_${shareDoc.id}`;
+          const graveKey = `${shareData.graveId}_${friendUid}`;
+
+          // Only sync if not already recorded in user's sent dispatches
+          if (!existingKeys.has(deterministicDocId) && !existingKeys.has(graveKey)) {
+            const userSentDocRef = doc(db, 'users', currentUserId, 'shared_graves', deterministicDocId);
+            await setDoc(userSentDocRef, {
+              graveId: shareData.graveId,
+              graveName: shareData.graveName || 'Tombstone',
+              fromUserId: currentUserId,
+              fromUsername: shareData.fromUsername || currentUsername || 'Cryptkeeper',
+              toUserId: friendUid,
+              toUsername: shareData.toUsername || friendUsername,
+              direction: 'sent',
+              createdAt: shareData.createdAt || new Date().toISOString()
+            }, { merge: true });
+
+            existingKeys.add(deterministicDocId);
+            existingKeys.add(graveKey);
+            syncedCount++;
+          }
+        }
+      } catch (err) {
+        console.warn(`Could not sync sent graves from friend ${friendUid}:`, err);
+      }
+    }
+
+    return syncedCount;
+  } catch (error) {
+    console.error("Error running sent graves sync:", error);
+    return 0;
+  }
 };
 
 export const followUser = async (currentUserId: string, currentUsername: string, targetUserId: string, targetUsername: string): Promise<void> => {

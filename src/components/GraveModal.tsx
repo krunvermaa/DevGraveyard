@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Grave, Eulogy, Friend } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
 import { pressF, dropEulogy, unpressF, deleteEulogy, deleteGrave } from '../services/graveService';
@@ -38,9 +39,20 @@ export const GraveModal: React.FC<GraveModalProps> = ({ grave, onClose }) => {
   const [showShareCard, setShowShareCard] = useState(false);
 
   useEffect(() => {
+    // Preserve initial body styles
+    const originalOverflow = document.body.style.overflow;
+    const originalPaddingRight = document.body.style.paddingRight;
+
+    // Compensate for scrollbar width to prevent layout shift and footer jumping
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+    }
     document.body.style.overflow = 'hidden';
+
     return () => {
-      document.body.style.overflow = '';
+      document.body.style.overflow = originalOverflow;
+      document.body.style.paddingRight = originalPaddingRight;
     };
   }, []);
 
@@ -167,12 +179,25 @@ export const GraveModal: React.FC<GraveModalProps> = ({ grave, onClose }) => {
     }
   };
 
-  const handleShare = async (friendUid: string) => {
+  const [shareSuccessFriend, setShareSuccessFriend] = useState<string | null>(null);
+
+  const handleShare = async (friend: Friend) => {
     if (!user) return;
-    setSharingTo(friendUid);
+    setSharingTo(friend.uid);
     try {
-      await shareGraveWithFriend(grave.id, grave.project_name, user.uid, currentUserDisplayName, friendUid);
-      setShowShare(false);
+      await shareGraveWithFriend(
+        grave.id,
+        grave.project_name,
+        user.uid,
+        currentUserDisplayName,
+        friend.uid,
+        friend.username
+      );
+      setShareSuccessFriend(friend.username);
+      setTimeout(() => {
+        setShareSuccessFriend(null);
+        setShowShare(false);
+      }, 1000);
     } catch (err) {
       console.error(err);
     } finally {
@@ -191,7 +216,9 @@ export const GraveModal: React.FC<GraveModalProps> = ({ grave, onClose }) => {
     }
   };
 
-  return (
+  if (typeof document === 'undefined' || !document.body) return null;
+
+  return createPortal(
     <>
       <AnimatePresence>
         {showShareCard && (
@@ -211,17 +238,19 @@ export const GraveModal: React.FC<GraveModalProps> = ({ grave, onClose }) => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
+        transition={{ duration: 0.2, ease: "easeOut" }}
         onClick={onClose}
         className="fixed inset-0 bg-black/85 backdrop-blur-md"
       />
 
       {/* Modal Dialog */}
       <motion.div 
-        initial={{ scale: 0.95, opacity: 0, y: 20 }}
+        initial={{ scale: 0.96, opacity: 0, y: 12 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
-        exit={{ scale: 0.95, opacity: 0, y: 20 }}
-        transition={{ type: "spring", duration: 0.5, bounce: 0.1 }}
-        className="relative w-full max-w-lg bg-zinc-950/95 backdrop-blur-2xl border border-zinc-800 rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.8)] p-5 md:p-6 flex flex-col items-center text-center gap-3 overflow-hidden selection:bg-[#c53030]/20 selection:text-[#c53030] ring-1 ring-white/5 max-h-[90vh] overflow-y-auto custom-scrollbar"
+        exit={{ scale: 0.96, opacity: 0, y: 12 }}
+        transition={{ duration: 0.2, ease: "easeOut" }}
+        style={{ transform: 'translate3d(0, 0, 0)', willChange: 'transform, opacity' }}
+        className="relative w-full max-w-lg bg-zinc-950/95 backdrop-blur-xl border border-zinc-800 rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.8)] p-5 md:p-6 flex flex-col items-center text-center gap-3 overflow-hidden selection:bg-[#c53030]/20 selection:text-[#c53030] ring-1 ring-white/5 max-h-[90vh] overflow-y-auto custom-scrollbar"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Quick Close Button */}
@@ -356,27 +385,38 @@ export const GraveModal: React.FC<GraveModalProps> = ({ grave, onClose }) => {
                     <Share2 className="w-4 h-4" />
                   </button>
                   {showShare && (
-                    <div className="absolute right-0 bottom-full mb-2 w-48 bg-zinc-950 border border-[#c53030]/30 rounded-xl shadow-xl overflow-hidden z-20 flex flex-col">
-                      <div className="p-2 border-b border-[#c53030]/20 text-[10px] font-mono tracking-widest text-[#c53030]/80 text-left">
-                        Share with Friend
+                    <div className="absolute right-0 bottom-full mb-2 w-52 bg-zinc-950 border border-[#c53030]/40 rounded-xl shadow-2xl overflow-hidden z-20 flex flex-col backdrop-blur-xl">
+                      <div className="p-2 border-b border-[#c53030]/20 text-[10px] font-mono tracking-widest text-[#c53030]/90 text-left flex items-center justify-between">
+                        <span>Dispatch to Friend</span>
+                        <span className="text-zinc-500 font-mono text-[9px]">{friends.length}</span>
                       </div>
-                      <div className="max-h-32 overflow-y-auto custom-scrollbar">
-                        {friends.length === 0 ? (
-                          <div className="p-3 text-xs text-zinc-500 font-mono text-center">No friends yet.</div>
-                        ) : (
-                          friends.map(friend => (
-                            <button
-                              key={friend.uid}
-                              onClick={() => handleShare(friend.uid)}
-                              disabled={sharingTo === friend.uid}
-                              className="w-full text-left px-3 py-2 text-xs font-mono text-zinc-300 hover:text-white hover:bg-zinc-900 transition-colors flex items-center justify-between"
-                            >
-                              <span className="truncate">@{friend.username}</span>
-                              {sharingTo === friend.uid && <Loader2 className="w-3 h-3 animate-spin" />}
-                            </button>
-                          ))
-                        )}
-                      </div>
+                      {shareSuccessFriend ? (
+                        <div className="p-3 text-xs text-red-400 font-mono flex items-center gap-2 justify-center bg-red-950/20">
+                          <span>✓ Dispatched to @{shareSuccessFriend}</span>
+                        </div>
+                      ) : (
+                        <div className="max-h-36 overflow-y-auto custom-scrollbar">
+                          {friends.length === 0 ? (
+                            <div className="p-3 text-xs text-zinc-500 font-mono text-center">No friends yet.</div>
+                          ) : (
+                            friends.map(friend => (
+                              <button
+                                key={friend.uid}
+                                onClick={() => handleShare(friend)}
+                                disabled={sharingTo === friend.uid}
+                                className="w-full text-left px-3 py-2 text-xs font-mono text-zinc-300 hover:text-white hover:bg-zinc-900 transition-colors flex items-center justify-between group cursor-pointer"
+                              >
+                                <span className="truncate group-hover:text-red-300">@{friend.username}</span>
+                                {sharingTo === friend.uid ? (
+                                  <Loader2 className="w-3 h-3 animate-spin text-red-400" />
+                                ) : (
+                                  <span className="text-[10px] text-zinc-600 group-hover:text-zinc-400">Send ↗</span>
+                                )}
+                              </button>
+                            ))
+                          )}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -423,15 +463,16 @@ export const GraveModal: React.FC<GraveModalProps> = ({ grave, onClose }) => {
             
             <AnimatePresence>
               {eulogies.length === 0 ? (
-                <motion.p initial={{opacity: 0}} animate={{opacity: 1}} className="text-zinc-500 text-xs font-mono italic">
+                <motion.p initial={{opacity: 0}} animate={{opacity: 1}} transition={{ duration: 0.15 }} className="text-zinc-500 text-xs font-mono italic">
                   No eulogies have been dropped yet. The crypt is silent.
                 </motion.p>
               ) : (
                 eulogies.map(e => (
                   <motion.div 
                     key={e.id}
-                    initial={{ opacity: 0, y: 10 }}
+                    initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.15, ease: "easeOut" }}
                     className="flex flex-col gap-1 p-2.5 rounded-xl bg-zinc-900/60 border border-zinc-800/80 relative group/eulogy"
                   >
                     <div className="flex items-center justify-between">
@@ -500,6 +541,7 @@ export const GraveModal: React.FC<GraveModalProps> = ({ grave, onClose }) => {
 
       </motion.div>
     </div>
-    </>
+    </>,
+    document.body
   );
 };

@@ -39,66 +39,82 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             </div>
           </Link>
           
-          {/* Desktop Navigation */}
+          {/* Desktop & Laptop Navigation */}
           {user && (
-            <nav className="hidden lg:flex items-center gap-5">
-              {location.pathname !== '/submit' ? (
-                <Link to="/submit">
-                  <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-mono tracking-wide text-red-200 bg-[#c53030]/20 border border-[#c53030]/50 hover:bg-[#c53030] hover:text-white hover:border-red-500 transition-all font-semibold shadow-sm cursor-pointer active:scale-95">
-                    <PlusCircle className="w-3.5 h-3.5" />
-                    <span>BURY A PROJECT</span>
-                  </button>
-                </Link>
-              ) : (
-                <Link to="/home">
-                  <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-mono tracking-wide text-zinc-200 bg-zinc-900 border border-zinc-750 hover:border-[#c53030]/60 hover:text-white transition-all font-semibold shadow-sm cursor-pointer">
-                    <span>RETURN TO CEMETERY</span>
-                  </button>
-                </Link>
-              )}
+            <nav className="hidden md:flex items-center gap-1.5 lg:gap-2.5">
+              <Link
+                to="/submit"
+                className={`group flex items-center gap-1.5 lg:gap-2 px-2.5 lg:px-3 py-1.5 rounded-lg border font-mono text-xs transition-all cursor-pointer ${
+                  location.pathname === '/submit'
+                    ? 'bg-[#c53030]/20 border-[#c53030] text-white font-bold'
+                    : 'bg-zinc-900/60 border-zinc-800 text-zinc-300 hover:text-white hover:border-[#c53030]/60'
+                }`}
+              >
+                <PlusCircle className={`w-3.5 h-3.5 text-[#c53030] shrink-0 transition-all ${location.pathname === '/submit' ? 'drop-shadow-[0_0_8px_rgba(197,48,48,0.8)]' : 'opacity-90 group-hover:opacity-100'}`} />
+                <span className="hidden lg:inline">Bury a Project</span>
+                <span className="lg:hidden">[+ BURY]</span>
+              </Link>
 
-              <Link to="/confessions">
-                <button className={`text-xs font-mono tracking-wide transition-colors border-b-2 pb-0.5 cursor-pointer ${location.pathname === '/confessions' ? 'text-white border-[#c53030] font-bold' : 'text-zinc-300 hover:text-white border-transparent hover:border-[#c53030]/60'}`}>
-                  CONFESSIONS
-                </button>
+              <Link
+                to="/confessions"
+                className={`group flex items-center gap-1.5 lg:gap-2 px-2.5 lg:px-3 py-1.5 rounded-lg border font-mono text-xs transition-all cursor-pointer ${
+                  location.pathname === '/confessions'
+                    ? 'bg-[#c53030]/20 border-[#c53030] text-white font-bold'
+                    : 'bg-zinc-900/60 border-zinc-800 text-zinc-300 hover:text-white hover:border-[#c53030]/60'
+                }`}
+              >
+                <Ghost className={`w-3.5 h-3.5 text-[#c53030] shrink-0 transition-all ${location.pathname === '/confessions' ? 'drop-shadow-[0_0_8px_rgba(197,48,48,0.8)]' : 'opacity-90 group-hover:opacity-100'}`} />
+                <span>Confessions</span>
               </Link>
-              <Link to="/chats">
-                <button className={`text-xs font-mono tracking-wide transition-colors border-b-2 pb-0.5 cursor-pointer ${location.pathname === '/chats' ? 'text-white border-[#c53030] font-bold' : 'text-zinc-300 hover:text-white border-transparent hover:border-[#c53030]/60'}`}>
-                  CHATS
-                </button>
+
+              <Link
+                to="/chats"
+                className={`group flex items-center gap-1.5 lg:gap-2 px-2.5 lg:px-3 py-1.5 rounded-lg border font-mono text-xs transition-all cursor-pointer ${
+                  location.pathname === '/chats'
+                    ? 'bg-[#c53030]/20 border-[#c53030] text-white font-bold'
+                    : 'bg-zinc-900/60 border-zinc-800 text-zinc-300 hover:text-white hover:border-[#c53030]/60'
+                }`}
+              >
+                <MessageSquare className={`w-3.5 h-3.5 text-[#c53030] shrink-0 transition-all ${location.pathname === '/chats' ? 'drop-shadow-[0_0_8px_rgba(197,48,48,0.8)]' : 'opacity-90 group-hover:opacity-100'}`} />
+                <span>Chats</span>
               </Link>
-              <Link to="/leaderboard">
-                <button className={`text-xs font-mono tracking-wide transition-colors border-b-2 pb-0.5 cursor-pointer ${location.pathname === '/leaderboard' ? 'text-white border-[#c53030] font-bold' : 'text-zinc-300 hover:text-white border-transparent hover:border-[#c53030]/60'}`}>
-                  LEADERBOARD
-                </button>
+
+              <Link
+                to="/leaderboard"
+                className={`group flex items-center gap-1.5 lg:gap-2 px-2.5 lg:px-3 py-1.5 rounded-lg border font-mono text-xs transition-all cursor-pointer ${
+                  location.pathname === '/leaderboard'
+                    ? 'bg-[#c53030]/20 border-[#c53030] text-white font-bold'
+                    : 'bg-zinc-900/60 border-zinc-800 text-zinc-300 hover:text-white hover:border-[#c53030]/60'
+                }`}
+              >
+                <Trophy className={`w-3.5 h-3.5 text-[#c53030] shrink-0 transition-all ${location.pathname === '/leaderboard' ? 'drop-shadow-[0_0_8px_rgba(197,48,48,0.8)]' : 'opacity-90 group-hover:opacity-100'}`} />
+                <span>Pantheon</span>
               </Link>
-              <Link to="/upcoming">
-                <button className={`text-xs font-mono tracking-wide transition-colors border-b-2 pb-0.5 cursor-pointer ${location.pathname === '/upcoming' ? 'text-white border-[#c53030] font-bold' : 'text-zinc-300 hover:text-white border-transparent hover:border-[#c53030]/60'}`}>
-                  UPCOMING
-                </button>
+
+              <Link
+                to="/upcoming"
+                className={`group flex items-center gap-1.5 lg:gap-2 px-2.5 lg:px-3 py-1.5 rounded-lg border font-mono text-xs transition-all cursor-pointer ${
+                  location.pathname === '/upcoming'
+                    ? 'bg-[#c53030]/20 border-[#c53030] text-white font-bold'
+                    : 'bg-zinc-900/60 border-zinc-800 text-zinc-300 hover:text-white hover:border-[#c53030]/60'
+                }`}
+              >
+                <Clock className={`w-3.5 h-3.5 text-[#c53030] shrink-0 transition-all ${location.pathname === '/upcoming' ? 'drop-shadow-[0_0_8px_rgba(197,48,48,0.8)]' : 'opacity-90 group-hover:opacity-100'}`} />
+                <span>Upcoming</span>
               </Link>
-              <Link to="/profile">
-                <button className={`flex items-center gap-1.5 text-xs font-mono tracking-wide transition-colors border-b-2 pb-0.5 cursor-pointer uppercase ${location.pathname === '/profile' ? 'text-white border-[#c53030] font-bold' : 'text-zinc-300 hover:text-white border-transparent hover:border-[#c53030]/60'}`}>
-                  <User className="w-3.5 h-3.5 text-zinc-400" />
-                  <span>{userProfile?.username || 'PROFILE'}</span>
-                </button>
+
+              <Link
+                to="/profile"
+                className={`group flex items-center gap-1.5 lg:gap-2 px-2.5 lg:px-3 py-1.5 rounded-lg border font-mono text-xs transition-all cursor-pointer ${
+                  location.pathname === '/profile'
+                    ? 'bg-[#c53030]/20 border-[#c53030] text-white font-bold'
+                    : 'bg-zinc-900/60 border-zinc-800 text-zinc-300 hover:text-white hover:border-[#c53030]/60'
+                }`}
+              >
+                <User className={`w-3.5 h-3.5 text-[#c53030] shrink-0 transition-all ${location.pathname === '/profile' ? 'drop-shadow-[0_0_8px_rgba(197,48,48,0.8)]' : 'opacity-90 group-hover:opacity-100'}`} />
+                <span className="uppercase truncate max-w-[110px] lg:max-w-[160px]">@{userProfile?.username || 'PROFILE'}</span>
               </Link>
             </nav>
-          )}
-
-          {/* Medium Screen Navigation (Tablets / Small Laptops) */}
-          {user && (
-            <div className="hidden md:flex lg:hidden items-center gap-3">
-              <Link to={location.pathname === '/submit' ? '/home' : '/submit'}>
-                <button className="px-2.5 py-1 rounded text-xs font-mono text-red-200 bg-[#c53030]/20 border border-[#c53030]/50 hover:bg-[#c53030] hover:text-white transition-all font-semibold">
-                  {location.pathname === '/submit' ? 'CEMETERY' : 'BURY'}
-                </button>
-              </Link>
-              <Link to="/confessions" className={`text-xs font-mono ${location.pathname === '/confessions' ? 'text-white font-bold' : 'text-zinc-300 hover:text-white'}`}>CONFESS</Link>
-              <Link to="/chats" className={`text-xs font-mono ${location.pathname === '/chats' ? 'text-white font-bold' : 'text-zinc-300 hover:text-white'}`}>CHATS</Link>
-              <Link to="/leaderboard" className={`text-xs font-mono ${location.pathname === '/leaderboard' ? 'text-white font-bold' : 'text-zinc-300 hover:text-white'}`}>RANKS</Link>
-              <Link to="/profile" className={`text-xs font-mono uppercase ${location.pathname === '/profile' ? 'text-white font-bold' : 'text-zinc-300 hover:text-white'}`}>@{userProfile?.username || 'YOU'}</Link>
-            </div>
           )}
 
           {/* Mobile Right Controls */}
@@ -131,7 +147,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.25, ease: 'easeInOut' }}
-              className="md:hidden border-t border-zinc-800 bg-zinc-950/95 backdrop-blur-xl overflow-hidden px-4 py-4 space-y-2 shadow-2xl"
+              className="md:hidden border-t border-zinc-800 bg-zinc-950/95 backdrop-blur-md overflow-hidden px-4 py-4 space-y-2 shadow-2xl"
             >
               <div className="grid grid-cols-2 gap-2 pb-2">
                 <Link
@@ -142,7 +158,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                       : 'bg-zinc-900/60 border-zinc-800 text-zinc-300 hover:text-white hover:border-[#c53030]/60'
                   }`}
                 >
-                  <HomeIcon className="w-4 h-4 text-[#c53030]" />
+                  <HomeIcon className={`w-4 h-4 text-[#c53030] ${location.pathname === '/home' ? 'drop-shadow-[0_0_8px_rgba(197,48,48,0.8)]' : ''}`} />
                   <span>Cemetery</span>
                 </Link>
 
@@ -154,7 +170,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                       : 'bg-zinc-900/60 border-zinc-800 text-zinc-300 hover:text-white hover:border-[#c53030]/60'
                   }`}
                 >
-                  <PlusCircle className="w-4 h-4 text-[#c53030]" />
+                  <PlusCircle className={`w-4 h-4 text-[#c53030] ${location.pathname === '/submit' ? 'drop-shadow-[0_0_8px_rgba(197,48,48,0.8)]' : ''}`} />
                   <span>Bury Project</span>
                 </Link>
 
@@ -166,7 +182,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                       : 'bg-zinc-900/60 border-zinc-800 text-zinc-300 hover:text-white hover:border-[#c53030]/60'
                   }`}
                 >
-                  <Ghost className="w-4 h-4 text-[#c53030]" />
+                  <Ghost className={`w-4 h-4 text-[#c53030] ${location.pathname === '/confessions' ? 'drop-shadow-[0_0_8px_rgba(197,48,48,0.8)]' : ''}`} />
                   <span>Confessions</span>
                 </Link>
 
@@ -178,7 +194,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                       : 'bg-zinc-900/60 border-zinc-800 text-zinc-300 hover:text-white hover:border-[#c53030]/60'
                   }`}
                 >
-                  <MessageSquare className="w-4 h-4 text-[#c53030]" />
+                  <MessageSquare className={`w-4 h-4 text-[#c53030] ${location.pathname === '/chats' ? 'drop-shadow-[0_0_8px_rgba(197,48,48,0.8)]' : ''}`} />
                   <span>Chats</span>
                 </Link>
 
@@ -190,7 +206,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                       : 'bg-zinc-900/60 border-zinc-800 text-zinc-300 hover:text-white hover:border-[#c53030]/60'
                   }`}
                 >
-                  <Trophy className="w-4 h-4 text-[#c53030]" />
+                  <Trophy className={`w-4 h-4 text-[#c53030] ${location.pathname === '/leaderboard' ? 'drop-shadow-[0_0_8px_rgba(197,48,48,0.8)]' : ''}`} />
                   <span>Pantheon</span>
                 </Link>
 
@@ -202,7 +218,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                       : 'bg-zinc-900/60 border-zinc-800 text-zinc-300 hover:text-white hover:border-[#c53030]/60'
                   }`}
                 >
-                  <Clock className="w-4 h-4 text-[#c53030]" />
+                  <Clock className={`w-4 h-4 text-[#c53030] ${location.pathname === '/upcoming' ? 'drop-shadow-[0_0_8px_rgba(197,48,48,0.8)]' : ''}`} />
                   <span>Upcoming</span>
                 </Link>
               </div>
@@ -217,7 +233,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                   }`}
                 >
                   <div className="flex items-center gap-2">
-                    <User className="w-4 h-4 text-[#c53030]" />
+                    <User className={`w-4 h-4 text-[#c53030] ${location.pathname === '/profile' ? 'drop-shadow-[0_0_8px_rgba(197,48,48,0.8)]' : ''}`} />
                     <span className="uppercase font-semibold">@{userProfile?.username || 'PROFILE'}</span>
                   </div>
                   <span className="text-[10px] text-zinc-400 font-mono">View Crypt &rarr;</span>

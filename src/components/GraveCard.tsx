@@ -21,6 +21,10 @@ export const GraveCard: React.FC<GraveCardProps> = ({ grave, index = 0, classNam
 
   const playHoverSound = () => {
     try {
+      // Disable hover sound on touch devices to avoid audio thread stalls on mobile
+      if (typeof window !== 'undefined' && 'ontouchstart' in window && !window.matchMedia('(hover: hover)').matches) {
+        return;
+      }
       const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
       if (!AudioContext) return;
       const ctx = new AudioContext();
@@ -67,7 +71,9 @@ export const GraveCard: React.FC<GraveCardProps> = ({ grave, index = 0, classNam
         style={{
           backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.85\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\'/%3E%3C/svg%3E")',
           backgroundBlendMode: 'overlay',
-          backgroundColor: '#3f3f46' // zinc-700 equivalent
+          backgroundColor: '#3f3f46', // zinc-700 equivalent
+          transform: 'translateZ(0)',
+          backfaceVisibility: 'hidden'
         }}
       >
         

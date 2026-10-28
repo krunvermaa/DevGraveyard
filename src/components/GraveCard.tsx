@@ -64,14 +64,13 @@ export const GraveCard: React.FC<GraveCardProps> = ({ grave, index = 0, classNam
         GRAVE STONE
       */}
       <div 
-        className="relative z-10 w-40 h-56 bg-zinc-600 border-x-4 border-t-4 border-zinc-500 rounded-t-full rounded-b-md 
-                   flex flex-col items-center justify-center p-4 text-center shadow-[0_10px_30px_rgba(0,0,0,0.8),inset_0_4px_15px_rgba(255,255,255,0.1)] overflow-hidden
+        className="relative z-10 w-40 h-56 border-x-4 border-t-4 border-zinc-500/90 rounded-t-full rounded-b-md 
+                   flex flex-col items-center justify-center p-4 text-center overflow-hidden
                    group-hover:border-zinc-400 group-hover:shadow-[0_0_40px_10px_rgba(197,48,48,0.3)]
                    transition-all duration-500 ease-out"
         style={{
-          backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.85\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\'/%3E%3C/svg%3E")',
-          backgroundBlendMode: 'overlay',
-          backgroundColor: '#3f3f46', // zinc-700 equivalent
+          background: 'linear-gradient(145deg, #3f3f46 0%, #27272a 100%)',
+          boxShadow: '0 10px 30px rgba(0,0,0,0.8), inset 1px 1px 0 rgba(255, 255, 255, 0.15), inset -1px -1px 0 rgba(0, 0, 0, 0.5)',
           transform: 'translateZ(0)',
           backfaceVisibility: 'hidden'
         }}
@@ -105,7 +104,7 @@ export const GraveCard: React.FC<GraveCardProps> = ({ grave, index = 0, classNam
         <Link 
           to={`/user/${grave.user_name}`}
           onClick={(e) => e.stopPropagation()}
-          className="absolute -bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900/80 border border-zinc-800/80 shadow-lg backdrop-blur-sm z-20 hover:bg-zinc-800 hover:border-zinc-600 transition-colors whitespace-nowrap max-w-[200px]"
+          className="absolute -bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900 border border-zinc-800 shadow-lg z-20 hover:bg-zinc-800 hover:border-zinc-600 transition-colors whitespace-nowrap max-w-[200px]"
         >
           {grave.user_avatar && (
             <img 
@@ -127,7 +126,7 @@ export const GraveCard: React.FC<GraveCardProps> = ({ grave, index = 0, classNam
           target="_blank"
           rel="noopener noreferrer"
           onClick={(e) => e.stopPropagation()}
-          className="absolute top-0 right-4 p-2 bg-zinc-900/80 border border-zinc-800/80 rounded-full shadow-lg backdrop-blur-sm z-30 hover:bg-zinc-800 hover:border-zinc-600 transition-all hover:scale-110 group/gh"
+          className="absolute top-0 right-4 p-2 bg-zinc-900 border border-zinc-800 rounded-full shadow-lg z-30 hover:bg-zinc-800 hover:border-zinc-600 transition-all hover:scale-110 group/gh"
           title="View Repository"
         >
           <svg className="w-5 h-5 text-zinc-400 group-hover/gh:text-white" fill="currentColor" viewBox="0 0 24 24">

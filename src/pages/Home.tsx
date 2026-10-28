@@ -110,7 +110,7 @@ export const Home: React.FC = () => {
               placeholder="Search graves by title, tech stack, or username..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="block w-full pl-10 pr-3 py-3 border border-[#c53030]/20 rounded-xl leading-5 bg-surface/30 text-zinc-300 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-[#c53030]/50 focus:border-[#c53030]/50 sm:text-sm backdrop-blur-sm transition-all"
+              className="block w-full pl-10 pr-3 py-3 border border-[#c53030]/20 rounded-xl leading-5 bg-surface/90 text-zinc-300 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-[#c53030]/50 focus:border-[#c53030]/50 sm:text-sm transition-all"
             />
           </div>
           
@@ -124,10 +124,10 @@ export const Home: React.FC = () => {
                 placeholder="Find developer..."
                 value={developerSearch}
                 onChange={(e) => setDeveloperSearch(e.target.value)}
-                className="block w-full sm:w-48 pl-9 pr-3 py-2 border border-zinc-800 rounded-lg text-sm bg-black/30 text-zinc-300 placeholder-zinc-600 focus:outline-none focus:border-[#c53030]/50 transition-all"
+                className="block w-full sm:w-48 pl-9 pr-3 py-2 border border-zinc-800 rounded-lg text-sm bg-black/60 text-zinc-300 placeholder-zinc-600 focus:outline-none focus:border-[#c53030]/50 transition-all"
               />
             </form>
-            <span className="text-xs font-mono text-zinc-400 border border-zinc-800 px-3 py-1.5 rounded transition-colors hover:text-zinc-300 hover:border-zinc-700 cursor-default bg-surface/30 backdrop-blur-sm shrink-0">
+            <span className="text-xs font-mono text-zinc-400 border border-zinc-800 px-3 py-1.5 rounded transition-colors hover:text-zinc-300 hover:border-zinc-700 cursor-default bg-surface/90 shrink-0">
               {loading ? '...' : filteredGraves.length} GRAVES
             </span>
           </div>
@@ -141,7 +141,7 @@ export const Home: React.FC = () => {
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col items-center justify-center py-24 bg-surface/30 border border-[#c53030]/20 rounded-xl backdrop-blur-sm shadow-[0_0_30px_rgba(223,54,54,0.05)]"
+            className="flex flex-col items-center justify-center py-24 bg-surface/60 border border-[#c53030]/20 rounded-xl shadow-[0_0_30px_rgba(223,54,54,0.05)]"
           >
             <p className="text-zinc-400 mb-6 font-mono text-sm">
               {searchQuery ? "No matching graves found." : "The cemetery is quiet. Too quiet."}
@@ -154,24 +154,24 @@ export const Home: React.FC = () => {
           </motion.div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-32 md:gap-y-40 mt-12">
-            <AnimatePresence>
-              {filteredGraves.map((grave, index) => (
-                <motion.div 
-                  key={grave.id} 
-                  initial={{ opacity: 0, y: 50 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: "-50px" }}
-                  transition={{ duration: 0.6, delay: (index % 3) * 0.15 }}
-                  className="group relative hover:z-50 transition-all duration-300"
-                >
-                  <GraveCard 
-                    grave={grave} 
-                    index={index} 
-                    onClick={() => setSelectedGrave(grave)}
-                  />
-                </motion.div>
-              ))}
-            </AnimatePresence>
+            {filteredGraves.map((grave, index) => (
+              <div 
+                key={grave.id} 
+                className="group relative hover:z-50 transition-all duration-300 animate-fade-in-up"
+                style={{
+                  animationDelay: `${Math.min((index % 6) * 0.06, 0.36)}s`,
+                  animationFillMode: 'both',
+                  contentVisibility: 'auto',
+                  containIntrinsicSize: '0 300px'
+                }}
+              >
+                <GraveCard 
+                  grave={grave} 
+                  index={index} 
+                  onClick={() => setSelectedGrave(grave)}
+                />
+              </div>
+            ))}
           </div>
         )}
       </section>

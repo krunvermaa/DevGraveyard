@@ -166,11 +166,18 @@ export const Confessions: React.FC = () => {
   return (
     <div className="min-h-[calc(100vh-80px)] w-full p-4 relative overflow-hidden flex flex-col items-center">
       {/* Dark Haunted Wall Background */}
-      <div className="fixed inset-0 z-[-2] bg-[#0a0a0c]" />
       <div 
-        className="fixed inset-0 z-[-1]"
+        className="fixed inset-0 z-[-2] pointer-events-none"
         style={{
-          backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.8\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\' opacity=\'0.15\'/%3E%3C/svg%3E")',
+          background: 'linear-gradient(180deg, #121216 0%, #0a0a0c 40%, #050507 100%)',
+          contain: 'strict',
+        }}
+      />
+      <div 
+        className="fixed inset-0 z-[-1] pointer-events-none"
+        style={{
+          background: 'radial-gradient(circle at 50% 20%, rgba(39, 39, 42, 0.2) 0%, transparent 70%)',
+          contain: 'strict',
         }}
       />
       

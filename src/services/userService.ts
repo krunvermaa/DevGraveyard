@@ -2,7 +2,7 @@ import { AVATARS } from "../pixelAvatars";
 import { db } from '../firebase';
 import { 
   collection, doc, getDoc, getDocs, setDoc, query, where, 
-  writeBatch, updateDoc, onSnapshot, arrayUnion 
+  writeBatch, updateDoc, onSnapshot, arrayUnion, deleteDoc 
 } from 'firebase/firestore';
 import { User, FriendRequest, Friend, SharedGrave } from '../types';
 
@@ -52,7 +52,7 @@ export const findUserByUsername = async (username: string): Promise<{uid: string
   return null;
 };
 
-export const sendFriendRequest = async (fromUserId: string, fromUsername: string, toUserId: string): Promise<void> => {
+export const sendFriendRequest = async (fromUserId: string, fromUsername: string, toUserId: string, toUsername?: string): Promise<void> => {
   // Check if they are already friends
   const friendDoc = await getDoc(doc(db, 'users', fromUserId, 'friends', toUserId));
   if (friendDoc.exists()) throw new Error('Already friends');
@@ -79,9 +79,14 @@ export const sendFriendRequest = async (fromUserId: string, fromUsername: string
     fromUserId,
     fromUsername,
     toUserId,
+    toUsername: toUsername || '',
     status: 'pending',
     createdAt: new Date().toISOString()
   });
+};
+
+export const cancelFriendRequest = async (requestId: string): Promise<void> => {
+  await deleteDoc(doc(db, 'friend_requests', requestId));
 };
 
 export const respondToFriendRequest = async (requestId: string, fromUserId: string, toUserId: string, toUsername: string, fromUsername: string, accept: boolean): Promise<void> => {
@@ -112,15 +117,44 @@ export const respondToFriendRequest = async (requestId: string, fromUserId: stri
   await batch.commit();
 };
 
-export const shareGraveWithFriend = async (graveId: string, graveName: string, fromUserId: string, fromUsername: string, toUserId: string): Promise<void> => {
-  const shareRef = doc(collection(db, 'users', toUserId, 'shared_graves'));
-  await setDoc(shareRef, {
+export const shareGraveWithFriend = async (
+  graveId: string,
+  graveName: string,
+  fromUserId: string,
+  fromUsername: string,
+  toUserId: string,
+  toUsername: string
+): Promise<void> => {
+  const batch = writeBatch(db);
+  const createdAt = new Date().toISOString();
+
+  // Recipient copy (received)
+  const recipientShareRef = doc(collection(db, 'users', toUserId, 'shared_graves'));
+  batch.set(recipientShareRef, {
     graveId,
     graveName,
     fromUserId,
     fromUsername,
-    createdAt: new Date().toISOString()
+    toUserId,
+    toUsername,
+    direction: 'received',
+    createdAt
   });
+
+  // Sender copy (sent)
+  const senderShareRef = doc(collection(db, 'users', fromUserId, 'shared_graves'));
+  batch.set(senderShareRef, {
+    graveId,
+    graveName,
+    fromUserId,
+    fromUsername,
+    toUserId,
+    toUsername,
+    direction: 'sent',
+    createdAt
+  });
+
+  await batch.commit();
 };
 
 export const followUser = async (currentUserId: string, currentUsername: string, targetUserId: string, targetUsername: string): Promise<void> => {

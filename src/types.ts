@@ -15,6 +15,7 @@ export interface FriendRequest {
   fromUserId: string;
   fromUsername: string;
   toUserId: string;
+  toUsername?: string;
   status: 'pending' | 'accepted' | 'rejected';
   createdAt: string;
 }
@@ -31,6 +32,9 @@ export interface SharedGrave {
   graveName: string;
   fromUserId: string;
   fromUsername: string;
+  toUserId?: string;
+  toUsername?: string;
+  direction?: 'sent' | 'received';
   createdAt: string;
 }
 

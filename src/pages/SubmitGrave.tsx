@@ -217,6 +217,7 @@ export const SubmitGrave: React.FC = () => {
             type="url"
           />
           <GithubRepoPicker 
+            selectedUrl={formData.github_link}
             onSelectRepo={(url, name, language) => {
               setFormData(prev => ({
                 ...prev,

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { loginWithGithub, loginWithGoogle, isFirebaseConfigured } from '../firebase';
+import { loginWithGithub, loginWithGoogle, isFirebaseConfigured, GithubAuthProvider } from '../firebase';
+import { getAdditionalUserInfo } from 'firebase/auth';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 
@@ -59,7 +60,19 @@ export const Login: React.FC = () => {
     setError(null);
     try {
       if (provider === 'github') {
-        await loginWithGithub();
+        const result = await loginWithGithub();
+        try {
+          const credential = GithubAuthProvider.credentialFromResult(result);
+          if (credential?.accessToken) {
+            localStorage.setItem('devgraveyard_gh_token', credential.accessToken);
+            const info = getAdditionalUserInfo(result);
+            if (info?.username) {
+              localStorage.setItem('devgraveyard_gh_username', info.username);
+            }
+          }
+        } catch (tokenErr) {
+          console.warn('Could not cache github token from login:', tokenErr);
+        }
       } else {
         await loginWithGoogle();
       }

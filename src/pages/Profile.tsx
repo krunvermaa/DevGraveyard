@@ -159,12 +159,45 @@ export const Profile: React.FC = () => {
           </div>
 
           {/* GraveScore Card */}
-          <div className="bg-zinc-950/80 border border-zinc-800/80 rounded-3xl p-6 backdrop-blur-md shadow-2xl flex flex-col items-center justify-center relative overflow-hidden group">
-            <div className="absolute inset-0 bg-[#c53030]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            <span className="text-[10px] uppercase tracking-widest text-[#c53030] font-bold mb-2 font-mono">GraveScore</span>
-            <span className="text-6xl font-serif text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]">
-              {totalGraveScore}
-            </span>
+          <div className="bg-gradient-to-b from-zinc-950 via-zinc-900/90 to-black border border-zinc-800/90 hover:border-red-600/50 rounded-3xl p-6 sm:p-7 backdrop-blur-md shadow-2xl flex flex-col items-center justify-between relative overflow-hidden group transition-all duration-500">
+            {/* Top ruby accent line matching user card */}
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-zinc-800 via-red-600/60 to-zinc-800" />
+
+            {/* Subtle red radial ambient glow */}
+            <div className="absolute -top-16 -right-16 w-44 h-44 bg-red-600/10 rounded-full blur-3xl pointer-events-none group-hover:bg-red-600/20 transition-all duration-700" />
+            <div className="absolute -bottom-16 -left-16 w-44 h-44 bg-red-950/20 rounded-full blur-3xl pointer-events-none" />
+
+            {/* Creative Crypt Glyphs & Header Badge */}
+            <div className="flex items-center gap-2 pt-0.5">
+              <span className="text-red-500 text-xs font-serif select-none drop-shadow-[0_0_8px_rgba(239,68,68,0.6)]">✟</span>
+              <span className="text-[11px] uppercase tracking-[0.25em] text-red-400 font-mono font-bold">
+                GraveScore
+              </span>
+              <span className="text-red-500 text-xs font-serif select-none drop-shadow-[0_0_8px_rgba(239,68,68,0.6)]">✟</span>
+            </div>
+
+            {/* Contrasty, Glowing Score Typography */}
+            <div className="my-auto py-3 sm:py-4 flex flex-col items-center text-center">
+              <div className="relative inline-flex items-center justify-center">
+                <div className="absolute inset-0 bg-red-600/20 blur-2xl rounded-full scale-125 pointer-events-none group-hover:scale-150 group-hover:bg-red-600/30 transition-all duration-500" />
+                <span className="relative text-5xl sm:text-6xl font-serif font-bold text-white tracking-wider drop-shadow-[0_0_20px_rgba(239,68,68,0.35)]">
+                  {totalGraveScore.toLocaleString()}
+                </span>
+              </div>
+              <div className="mt-2.5 flex items-center gap-1.5">
+                <span className="text-[10px] font-mono tracking-widest uppercase text-zinc-400 font-medium">
+                  Crypt Honor
+                </span>
+              </div>
+            </div>
+
+            {/* Clean Metadata Line */}
+            <div className="w-full pt-3 border-t border-zinc-800/80 flex items-center justify-between text-[11px] font-mono text-zinc-400 px-1">
+              <span className="text-zinc-500">Tributes & Wisdom</span>
+              <span className="text-zinc-300 font-medium">
+                {graves.length} {graves.length === 1 ? 'project' : 'projects'} laid to rest
+              </span>
+            </div>
           </div>
         </motion.div>
 

@@ -1,4 +1,4 @@
-# Dev Graveyard 🪦 — Complete Project Documentation & Summary
+# Dev Graveyard 🪦 — Complete Project Documentation & Architectural Summary
 
 > **"Not every project survives. Some still teach."**  
 > *Requiescat in Pace*
@@ -7,187 +7,166 @@
 
 ## 1. Executive Summary
 
-**Dev Graveyard** is a gothic-themed, cathartic social platform and digital memorial designed specifically for developers. Software engineers, indie hackers, and hobbyists start countless projects that ultimately stall, fail, or get abandoned due to scope creep, loss of interest, lack of time, technical blockers, or co-founder disputes.
-
-Instead of letting dead code rot silently in forgotten local directories or private GitHub archives, **Dev Graveyard** provides a sanctuary to give those projects a dignified burial, commemorate the effort invested, share technical post-mortems ("lessons learned"), and celebrate failures as universal milestones on the journey of building software.
+**Dev Graveyard** is a gothic-themed, cathartic social platform and digital memorial crafted specifically for software engineers, open-source contributors, and indie hackers. Developers inevitably abandon projects due to scope creep, dwindling free time, architecture bottlenecks, co-founder fallout, or missing market fit. Instead of leaving dead code to decay in private folders or abandoned repositories, **Dev Graveyard** provides a dignified resting place where builders memorialize their work, conduct technical post-mortems, share hard-earned wisdom, and celebrate failure as a necessary stepping stone toward mastery.
 
 ---
 
-## 2. Design System & Gothic Aesthetic
+## 2. Design System & Gothic Aesthetics
 
-The application is built around an atmospheric, eerie, and immersive graveyard aesthetic with modern dark-mode software design principles.
+Dev Graveyard combines modern web performance with an atmospheric, dark-gothic visual identity:
 
-### Typography
-- **Headings & Accents:** Impactful sans-serif with bold monospace sub-elements for a terminal/coding aesthetic.
-- **Narrative & Epitaphs:** Elegant serif italics (`font-serif italic`) for lessons learned, eulogies, and philosophical quotes, mimicking hand-carved stone epitaphs.
-- **Metadata & Badges:** Monospace typography (`font-mono`) with custom bracket wrapping (e.g. `[ BURY A PROJECT ]`, `[ CONFESSIONS ]`, `[ LEADERBOARD ]`).
+### 2.1. Visual Palette & Glassmorphism
+- **Primary Backgrounds:** Deep void blacks (`#000000`, `zinc-950`, `zinc-900/50`) paired with subtle backdrop blur glassmorphism (`backdrop-blur-md`).
+- **Signature Accents:** Neon Crimson / Blood Red (`#c53030` / `#df3636`) signifying glowing embers, active states, and tombstone highlights.
+- **Borders & Dividers:** Etched slate grey (`border-zinc-800/80`, `border-white/10`).
+- **High-Contrast Text:** Ghostly stark white (`text-white`) for headings, weathered silver (`text-zinc-300`) for body copy, and fading crypt fog (`text-zinc-500`, `text-zinc-600`) for metadata.
 
-### Color Palette
-- **Backgrounds:** Ultra-deep voids (`#000000`, `zinc-950`, `zinc-900/50`) with backdrop blur glassmorphism (`backdrop-blur-md`).
-- **Borders & Dividers:** Subtle stone grey (`zinc-800/80`, `border-white/10`).
-- **Signature Glow & Accents:** Neon Crimson / Blood Red (`#c53030` / `#df3636`) used for highlights, flaming embers, hover states, and interactive reactions.
-- **Text:** High-contrast ghostly white (`text-white`), muted silver (`zinc-300`), and fading fog grey (`zinc-500`, `zinc-600`).
-
-### Interactive Effects & Motion
-- **Atmosphere & Soul Container:** Floating particles, ethereal glowing souls, and animated bats fluttering across the screen (`motion/react`).
-- **Tombstone Hover Dynamics:** Hovering over any grave card lifts a "soul container" out of the tombstone with smooth transitions and glowing ambient lighting.
-- **Audio Feedback:** Optional eerie atmospheric sounds accompanying grave submissions and paying respects.
+### 2.2. Atmospheric Engine & 60 FPS Performance
+- **Hardware-Accelerated Rendering:** Ambient mist animations and floating soul particles are rendered using CSS transforms with strict hardware containment (`contain: strict; will-change: transform, opacity;`), avoiding heavy SVG turbulence filters to maintain fluid 60 FPS scrolling on mobile and desktop devices.
+- **Audio Feedback:** Mournful chimes and crypt sound effects triggered during grave creation, paying respects, and social interactions, with full mobile touch support.
+- **Responsive Layout:** Unified top navigation bar on desktop with an intuitive, slide-out drawer on mobile screens.
 
 ---
 
-## 3. Technology Stack & Architecture
+## 3. Technology Stack
 
-### Frontend Architecture
-- **Framework:** React 18+ bootstrapped with Vite for fast HMR and optimized production bundles.
-- **Language:** Strict TypeScript (`tsconfig.json`) ensuring end-to-end type safety.
-- **Routing:** `react-router-dom` using `HashRouter` for reliable single-page client routing across static hosting environments.
-- **Styling:** Tailwind CSS with custom utility classes, dark-mode gradients, and glassmorphism.
-- **Motion & Animations:** `motion/react` (Framer Motion) for exit/enter animations, staggered lists, and atmospheric effects.
-- **Icons:** `lucide-react` (clean, high-performance SVG iconography).
-
-### Backend & Cloud Infrastructure (Firebase)
-- **Firebase Authentication:** Handles user identity, anonymous sessions, and authenticated user accounts.
-- **Cloud Firestore:** Real-time NoSQL document database storing graves, user registries, friend networks, eulogies, and confessions.
-- **Firestore Security Rules:** Strict schema validation, owner-based read/write rules, and protected subcollections.
-
----
-
-## 4. Core Features & Functional Pages
-
-### 4.1. Navigation & Global Layout (`Layout.tsx`)
-The top navigation bar provides instant access across all sections:
-- `[ BURY A PROJECT ]` — Quick link to the grave creation wizard.
-- `[ CONFESSIONS ]` — Anonymous developer confession wall.
-- `[ CHATS ]` — Private inbox and shared graves viewer.
-- `[ LEADERBOARD ]` — Top abandoned projects ranked by community respect.
-- `[ UPCOMING ]` — Roadmap of upcoming platform features.
-- `[ {USERNAME} ]` — Direct link to the authenticated user's profile plot.
+| Layer | Technologies |
+| :--- | :--- |
+| **Frontend Framework** | [React 19](https://react.dev) with [TypeScript 5.8](https://www.typescriptlang.org) |
+| **Build Tool & Bundler** | [Vite 6](https://vite.dev) with custom manual chunk splitting for optimal vendor caching |
+| **Routing** | [React Router 7](https://reactrouter.com) (`HashRouter`) with route-level lazy loading (`React.lazy` + `Suspense`) |
+| **Styling & Icons** | [Tailwind CSS 3](https://tailwindcss.com), [Lucide React](https://lucide.dev) |
+| **Motion & Animation** | [Motion](https://motion.dev) (`motion/react`) for smooth transitions and gesture effects |
+| **Share Graphics Engine** | HTML5 Canvas rendering engine + [html2canvas](https://html2canvas.hertzen.com) fallback with QR code integration |
+| **Backend & Database** | [Google Cloud Firestore](https://firebase.google.com/docs/firestore) (real-time document listeners and atomic batch operations) |
+| **Authentication** | [Firebase Authentication](https://firebase.google.com/docs/auth) supporting GitHub OAuth & Google OAuth |
+| **Hosting & Deployment** | [Vercel](https://vercel.com) with Single Page Application (SPA) rewrite rules and HTTP security headers |
 
 ---
 
-### 4.2. Home Sanctuary (`pages/Home.tsx`)
-The primary discovery portal for all buried projects:
-- **Global Search:** Search graves in real-time by project title, developer username, or tech stack keywords.
-- **Cause of Death Filters:** Quick-filter by standardized reasons for demise.
-- **Grave Grid:** Responsive grid displaying tombstones with lifespan dates, tech tags, and community metrics (`respects` and `eulogies`).
+## 4. Core Features & User Journey
+
+### 4.1. Grave Sanctuary (Home — `/home`)
+- **Real-Time Cemetery Feed:** Browse public project graves laid to rest by the community.
+- **Multi-Vector Search:** Instant client-side filtering matching project names, technology stacks, or author usernames.
+- **Developer Shortcut Search:** Direct handle navigation allowing users to jump straight to any developer's public crypt (`/user/:username`).
+- **Interactive Grave Cards:** Cards display the project lifespan, taxonomy badge, tech stack tags, respect count, and eulogy tallies.
+
+### 4.2. Burial Ritual & Project Creation (`/submit`)
+- **Structured Grave Data:**
+  - **Project Name:** The identity of the fallen application.
+  - **Lifespan Duration:** Freeform time description (e.g., "3 intense weekends", "8 months of late nights").
+  - **Standardized Cause of Death:**
+    - `Lack of Time`
+    - `Loss of Interest`
+    - `Technical Roadblocks`
+    - `Market Fit Missing`
+    - `Scope Creep`
+    - `Co-founder Conflict`
+    - `Other`
+  - **Tech Stack:** Comma-delimited list of technologies and libraries utilized.
+  - **Lesson Learned (The Epitaph):** The vital engineering or product takeaway preserved for the community.
+  - **Anonymous Burial Option:** Allows developers to preserve wisdom without linking their identity.
+- **GitHub Repository Picker Integration:**
+  - Connects via GitHub OAuth to retrieve the developer's public repositories.
+  - Caches repository lists and tokens securely in browser local storage.
+  - Displays repository star counts, primary languages, and last updated timestamps for one-click selection.
+  - Strict repository URL validation ensuring only authentic GitHub links are accepted.
+- **Ceremonial Submission Animation:** Multi-stage sequence transitions (`burying` → `soul-rising` → `complete`) providing immediate cathartic feedback.
+
+### 4.3. Tombstone Memorial & Tributes (`/grave/:id`)
+- **Press 'F' to Pay Respects:** Gamified tribute button that triggers rising flame particles and increments the project's RIP counter.
+- **Eulogy Wall:** Allows developers to write condolences, ask technical questions, or share related post-mortem experiences.
+- **Crypt Dispatching:** Send a memorial directly into a friend's crypt inbox for mutual retrospection.
+- **High-Resolution Social Share Card Generator:**
+  - Generates downloadable high-definition memorial cards containing project metadata, epitaph excerpts, and QR codes.
+  - Features dual-mode rendering: direct HTML5 Canvas drawing for high performance and an `html2canvas` DOM fallback.
+  - Includes instant clipboard copying for quick sharing on social platforms (Twitter/X, LinkedIn).
+
+### 4.4. The GraveScore Engine
+The platform incorporates a multi-factor scoring engine that evaluates each grave across five dimensions:
+1. **Lessons & Wisdom Depth (0–300 pts):** Semantic analysis evaluating the thoroughness, reflection, and actionable advice of the epitaph.
+2. **Mourning Tributes:** 15 points per community Respect + 35 points per Eulogy.
+3. **Lifespan Endurance (10–150 pts):** Scaled score reflecting the duration of development effort invested.
+4. **Open Source Sanctity (+75 pts):** Bonus awarded for verified public GitHub repository links.
+5. **Tech Stack Complexity (+10 pts per distinct technology, up to +50 pts).**
+
+#### Tombstone Tiers
+- 🪦 **Humble Headstone** (0–99 pts): A modest stone commemorating an early spark.
+- 🏛️ **Venerable Crypt** (100–299 pts): An honorable resting place carrying genuine community insights.
+- ⚔️ **Monument of the Slain** (300–699 pts): A battle-tested monolith bearing scars and recognized by peers.
+- 👑 **Mythic Mausoleum** (700+ pts): A legendary memorial honoring monumental effort and technical depth.
+
+### 4.5. Pantheon of the Dead (Leaderboard — `/leaderboard`)
+- Ranks the most celebrated open-source projects resting in the graveyard.
+- Requires verified GitHub repository links to qualify for ranking.
+- Automatically sorted by the dynamic **GraveScore** algorithm.
+- Displays Gold, Silver, and Bronze podium trophies and direct code inspection links.
+
+### 4.6. Crypt Dispatches & Chats (`/chats`)
+- **Bidirectional Inscribed Mail:** Exchange buried projects with connected developer friends.
+- **Filter Tabs:** Switch seamlessly between `All Dispatches`, `Received`, and `Sent`.
+- **Dispatch Modal:** Select any authored or bookmarked grave and send it directly to a chosen friend.
+- **Real-Time Notification:** Inbound and outbound dispatches sync live across user subcollections in Firestore.
+
+### 4.7. Wall of Confessions (`/confessions`)
+- **Anonymous Developer Sin Wall:** An unvarnished board where engineers post short, anonymous confessions (e.g., hardcoded database passwords, skipped test suites, abandoned side-projects).
+- **Stone Tablet Aesthetics:** Notes rendered as aged stone slabs with natural angular variance and custom slate textures.
+- **Live Sync & Moderation:** Real-time Firestore snapshot listener with client-side length enforcement (140 characters).
+- **Atmospheric Visuals:** Animated bats fluttering across the screen at randomized intervals.
+
+### 4.8. Developer Profile & Personal Crypt (`/profile` & `/user/:username`)
+- **Identity & Handle Reservation:** Guaranteed unique `@username` claims verified via atomic checks.
+- **Pixel-Art Avatars:** 10 curated gothic developer avatars (`ghost`, `lantern`, `candle`, `skull`, `pumpkin`, `reaper`, `eye`, `tombstone`, `crystal`, `raven`).
+- **Mortician Statistics:** Aggregated counts of buried projects, total respects collected, and community eulogies received.
+- **Tech Stack Autopsy:** Visual frequency breakdown detailing the programming languages and frameworks that have failed most often.
+- **Friends & Followers Network:** Search developers by username, dispatch friend requests, manage pending requests, and follow peers.
+- **Account Settings:** Update usernames, configure social accounts (Instagram, WhatsApp, GitHub), or execute full GDPR-compliant account deletion.
+
+### 4.9. Roadmap & Resurrections (`/upcoming`)
+Outlines four strategic feature expansions:
+1. **LinkedIn Post-Mortem & Mistake Analysis:** Automated transformer converting cause-of-death and lessons into professional career retrospectives.
+2. **AI Codebase Autopsy & Utility Salvager:** Code excavation tooling that identifies and extracts reusable helper functions and configs from dead repos.
+3. **Ghost Bounty & Adoption Exchange:** A handoff marketplace where creators transfer abandoned codebases to new maintainers.
+4. **Project Survival Guide:** Anti-pattern prevention checklists and architectural heuristics to avoid common failure points.
 
 ---
 
-### 4.3. Project Burial Wizard (`pages/SubmitGrave.tsx`)
-An interactive ritual to lay an abandoned project to rest:
-- **Project Name:** The fallen application's title.
-- **Lifespan Duration:** Duration the project lived before demise (e.g., "3 weekends", "6 months", "2 sleepless nights").
-- **Cause of Death Taxonomy:**
-  - `Lack of Time`
-  - `Loss of Interest`
-  - `Technical Roadblocks`
-  - `Market Fit Missing`
-  - `Scope Creep`
-  - `Co-founder Conflict`
-  - `Other`
-- **Tech Stack:** Comma-separated list of frameworks and tools used (e.g. `Next.js, Rust, Docker`).
-- **Lesson Learned (The Epitaph):** The vital engineering or product takeaway from the failure.
-- **GitHub Repository Picker:** Direct integration to connect public GitHub repositories.
-- **Anonymous Option:** Allows users to bury embarrassing failures without attaching their username.
+## 5. Database Schema & Architecture
 
----
+### Firestore Collections Blueprint
 
-### 4.4. Tombstone Modal & Memorial (`components/GraveModal.tsx` & `pages/GraveView.tsx`)
-- **Press 'F' to Pay Respects:** Gamified memorial button incrementing the RIP count with glowing embers.
-- **Eulogy Log:** Community members can leave heartfelt eulogies, condolences, or post-mortem discussions.
-- **Social Share Card Generator (`ShareCardModal.tsx`):** Renders a downloadable, high-resolution social share card containing project statistics, tombstone artwork, and formatted code snippets ready for Twitter/X or LinkedIn.
-- **Direct Friend Sharing:** Send a grave directly into a connected friend's crypt inbox.
-
----
-
-### 4.5. The Wall of Confessions (`pages/Confessions.tsx`)
-A cathartic anonymous board for developers to reveal their darkest development sins:
-- **Anonymous Notes:** Sticky-style stone tablets arranged in an organic layout with subtle rotation and stone-slate colors.
-- **Live Updates:** Powered by real-time Firestore listeners (`onSnapshot`).
-- **Profanity & Length Moderation:** Enforces a 140-character maximum per confession with automated keyword filtering.
-- **Ambient Atmosphere:** Animated bats flying periodically across the screen.
-
----
-
-### 4.6. Chats & Shared Graves (`pages/Chats.tsx` & `components/SharedGravesViewer.tsx`)
-- Private social space where friends send project graves to each other for feedback, resurrection proposals, or mutual post-mortems.
-- Allows immediate modal inspection and tribute paying directly from the shared list.
-
----
-
-### 4.7. Pantheon of the Dead / Leaderboard (`pages/Leaderboard.tsx`)
-- Honors the most celebrated abandoned projects in open source.
-- **Eligibility:** Exclusively ranks verified projects that provide direct GitHub repository links.
-- **Scoring Algorithm:** Weighted ranking computed using:
-  $$\text{Score} = (\text{Respects} \times 2) + \text{Eulogies Count}$$
-- Displays podium trophies (Gold, Silver, Bronze) and instant GitHub source links.
-
----
-
-### 4.8. Upcoming Resurrections (`pages/Upcoming.tsx`)
-Roadmap displaying upcoming platform expansions with an atmospheric Grim Reaper illustration:
-1. **Project Resurrections:** Mechanism to revive a dead project with new collaborators.
-2. **GitHub OAuth & Link Verification:** Automatic metadata extraction from commit histories.
-3. **Prevention Tips:** Educational guides on avoiding common architectural dead-ends.
-4. **LinkedIn-Ready Post-Mortems:** One-click generation of professional failure analyses.
-
----
-
-### 4.9. Developer Profile & Personal Plot (`pages/Profile.tsx` & `pages/UserProfile.tsx`)
-- **Pixel-Art Avatars (`pixelAvatars.ts`):** Curated selection of retro, themed avatars (skulls, reapers, phantoms, demons).
-- **Graveyard Footprint:** Statistics displaying total projects buried, total respects gathered, and community eulogies received.
-- **Tech Stack Autopsy:** Frequency breakdown chart revealing which languages and frameworks die most frequently in the developer's hands.
-- **Friends & Network Manager (`components/FriendsManager.tsx`):** Search users by `@username`, manage incoming/outgoing friend requests, and follow community members.
-- **Account Settings (`components/SettingsModal.tsx`):** Manage social handles (Instagram, WhatsApp), update usernames, or delete account data.
-
----
-
-## 5. Database Schema & Data Models
-
-### Firestore Collections Overview
-
-| Collection Path | Description | Key Fields |
+| Collection Path | Description | Key Attributes |
 | :--- | :--- | :--- |
-| `/graves/{graveId}` | All buried project documents | `project_name`, `cause_of_death`, `lived_for`, `lesson_learned`, `tech_stack`, `is_anonymous`, `github_link`, `respects`, `eulogies`, `user_id`, `user_name` |
-| `/users/{userId}` | Registered developer profiles | `uid`, `username`, `email`, `photoURL`, `instagram`, `whatsapp`, `createdAt` |
-| `/users/{userId}/friends/{friendId}` | Confirmed friends subcollection | `uid`, `username`, `addedAt` |
-| `/users/{userId}/followers/{followerId}`| Community followers subcollection | `uid`, `addedAt` |
-| `/users/{userId}/following/{followingId}`| Users followed subcollection | `uid`, `addedAt` |
-| `/users/{userId}/shared_graves/{shareId}`| Inbound shared graves from friends | `graveId`, `graveName`, `fromUserId`, `fromUsername`, `createdAt` |
-| `/usernames/{username}` | Unique username reservation registry | `uid` |
-| `/friend_requests/{requestId}` | Pending & resolved friend requests | `fromUserId`, `fromUsername`, `toUserId`, `status`, `createdAt` |
-| `/confessions/{confessionId}` | Anonymous developer confessions | `text`, `color`, `rotation`, `createdAt` |
+| `/graves/{graveId}` | Primary memorial documents | `project_name`, `cause_of_death`, `lived_for`, `lesson_learned`, `tech_stack`, `is_anonymous`, `github_link`, `respects`, `eulogies`, `user_id`, `user_name`, `created_at` |
+| `/users/{userId}` | Registered developer profiles | `uid`, `username`, `email`, `photoURL`, `instagram`, `whatsapp`, `github`, `bio`, `createdAt` |
+| `/users/{userId}/friends/{friendId}` | Confirmed friends roster | `uid`, `username`, `addedAt` |
+| `/users/{userId}/followers/{followerId}` | Inbound followers | `uid`, `username`, `addedAt` |
+| `/users/{userId}/following/{followingId}` | Outbound followed users | `uid`, `addedAt` |
+| `/users/{userId}/shared_graves/{shareId}` | Sent and received grave dispatches | `graveId`, `graveName`, `fromUserId`, `fromUsername`, `toUserId`, `toUsername`, `direction`, `createdAt` |
+| `/usernames/{username}` | Handle reservation registry | `uid` |
+| `/friend_requests/{requestId}` | Social request queue | `fromUserId`, `fromUsername`, `toUserId`, `toUsername`, `status`, `createdAt` |
+| `/confessions/{confessionId}` | Anonymous developer sin wall | `text`, `color`, `rotation`, `createdAt` |
 
 ---
 
-## 6. Security Rules & Data Integrity
+## 6. Security Model & Data Integrity
 
-The application enforces security through Firestore Rules (`firestore.rules`):
-- **Authentication Safeguards:** Unauthenticated clients cannot write or tamper with grave memorials or friend networks.
-- **Ownership Verification:** Only the author of a grave or the account owner can modify or delete their respective records.
-- **Validation Constraints:** Strings are bounded (project names $\le 100$ chars, lessons $\le 1000$ chars, confessions $\le 140$ chars).
-- **Username Uniqueness:** Enforced via atomic checks against `/usernames/{username}` preventing impersonation or duplicate handles.
-
----
-
-## 7. Developer Guide & Quickstart
-
-### Prerequisites
-- Node.js 18+ or Bun
-- Firebase Project configured with Firestore & Authentication
-
-### Installation & Execution
-```bash
-# Install dependencies
-npm install
-
-# Run local development server (Vite on port 3000)
-npm run dev
-
-# Build production bundle
-npm run build
-```
+The application enforces a least-privilege security policy governed by Firestore Rules (`firestore.rules`):
+- **Authentication Guards:** State-changing operations require authenticated Firebase sessions.
+- **Author Protection:** Graves can only be edited or removed by their original creator.
+- **Atomic Handle Uniqueness:** Username claims are executed with atomic validation against `/usernames/{username}` to avoid collisions.
+- **String Bounds & Sanitization:** Enforces maximum length constraints across project titles, lessons learned, and anonymous confessions to prevent storage abuse.
+- **Subcollection Isolation:** Social subcollections (`friends`, `followers`, `shared_graves`) restrict modification to the respective account owner.
 
 ---
 
-*Dev Graveyard — Transforming abandoned code into shared wisdom.*
+## 7. Build & Deployment Pipeline
+
+- **Production Bundling:** Optimized with Vite manual chunking to isolate third-party vendor bundles (`react-vendor`, `firebase-vendor`, `motion-vendor`), reducing main chunk weight and accelerating subsequent visits via HTTP caching.
+- **Single Page Application Routing:** Client-side routing is anchored with `HashRouter` ensuring seamless link navigation across static hosting CDNs without 404 rewriting errors.
+- **Vercel Infrastructure:** Configured through `vercel.json` with security headers (`X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`).
+
+---
+
+*Dev Graveyard — Transforming abandoned code into timeless wisdom.*

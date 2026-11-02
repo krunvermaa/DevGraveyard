@@ -33,7 +33,7 @@ feature plan can guarantee a hackathon win.
 
 ## 2. Existing Product
 
-Based on the supplied `DEVGRAVEYARD_SUMMARY.md`, the current application
+Based on `PROJECT_SUMMARY.md`, the current application
 includes:
 
 ### Project graves

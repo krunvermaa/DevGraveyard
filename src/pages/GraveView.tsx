@@ -43,7 +43,7 @@ export const GraveView: React.FC = () => {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
         <h2 className="text-2xl font-bold text-white mb-4">Grave Not Found</h2>
-        <button onClick={() => navigate('/')} className="text-[#c53030] hover:underline font-mono">Return to Graveyard</button>
+        <button onClick={() => navigate('/cemetery')} className="text-[#c53030] hover:underline font-mono">Return to Graveyard</button>
       </div>
     );
   }
@@ -51,7 +51,7 @@ export const GraveView: React.FC = () => {
   // Use a transparent full-screen div to host the modal
   return (
     <div className="fixed inset-0 z-50">
-      <GraveModal grave={grave} onClose={() => navigate('/')} />
+      <GraveModal grave={grave} onClose={() => navigate('/cemetery')} />
     </div>
   );
 };

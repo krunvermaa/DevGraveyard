@@ -71,7 +71,7 @@ export const SubmitGrave: React.FC = () => {
           
           // Step 4: Navigate away after reading completion message (2.5s)
           setTimeout(() => {
-            navigate('/home');
+            navigate('/cemetery');
           }, 2500);
         }, 3500);
       }, 2500);
@@ -268,7 +268,7 @@ export const SubmitGrave: React.FC = () => {
       <div className="text-center mt-6">
         <button 
           type="button" 
-          onClick={() => navigate('/home')} 
+          onClick={() => navigate('/cemetery')} 
           className="text-xs font-mono text-zinc-300 hover:text-white hover:border-[#c53030]/60 transition-colors uppercase tracking-widest border-b border-transparent hover:border-zinc-500 pb-0.5 cursor-pointer"
         >
           [ Cancel and Return to Graveyard ]

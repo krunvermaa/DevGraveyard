@@ -6,6 +6,7 @@ import { UsernameSelection } from './components/UsernameSelection';
 
 // Lazy-loaded route components for fast initial load and light bundle
 const Home = lazy(() => import('./pages/Home').then(m => ({ default: m.Home })));
+const Cemetery = lazy(() => import('./pages/Cemetery').then(m => ({ default: m.Cemetery })));
 const SubmitGrave = lazy(() => import('./pages/SubmitGrave').then(m => ({ default: m.SubmitGrave })));
 const Login = lazy(() => import('./pages/Login').then(m => ({ default: m.Login })));
 const Profile = lazy(() => import('./pages/Profile').then(m => ({ default: m.Profile })));
@@ -44,7 +45,9 @@ const App: React.FC = () => {
           <Suspense fallback={<PageLoader />}>
             <Routes>
               <Route path="/" element={<Login />} />
+              <Route path="/login" element={<Login />} />
               <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+              <Route path="/cemetery" element={<ProtectedRoute><Cemetery /></ProtectedRoute>} />
               <Route path="/submit" element={<ProtectedRoute><SubmitGrave /></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
               <Route path="/user/:username" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />

@@ -95,7 +95,7 @@ export const Upcoming: React.FC = () => {
               </li>
             </ul>
             <Link 
-              to="/" 
+              to="/cemetery" 
               className="inline-block mt-2 text-[10px] font-mono text-red-400/90 hover:text-red-300 underline decoration-red-500/40"
             >
               Explore Cemetery Archives →

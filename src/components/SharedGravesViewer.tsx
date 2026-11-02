@@ -460,7 +460,7 @@ export const SharedGravesViewer: React.FC<SharedGravesViewerProps> = ({
               <span>[ Dispatch a Grave ]</span>
             </button>
             <Link
-              to="/"
+              to="/cemetery"
               className="px-5 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 text-xs font-mono transition-colors uppercase tracking-wider"
             >
               [ Explore Cemetery Graves ]

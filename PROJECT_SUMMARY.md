@@ -46,13 +46,19 @@ Dev Graveyard combines modern web performance with an atmospheric, dark-gothic v
 
 ## 4. Core Features & User Journey
 
-### 4.1. Grave Sanctuary (Home — `/home`)
+### 4.1. The Grand Portal & Home Dashboard (`/home`)
+- **Mission & Manifesto:** Introduces newcomers to the core philosophy of Dev Graveyard — celebrating failed experiments and preserving vital architectural lessons.
+- **Platform Feature Guide:** Comprehensive onboarding for newbies explaining the Cemetery, Burial Ritual, GraveScore, Confessions, and Pantheon.
+- **Interactive FAQ Accordion:** Professional FAQ answering top developer questions (project eligibility, GitHub privacy, anonymous burials, GraveScore calculations, and tributes).
+- **Live Cemetery Pulse Metrics:** Real-time counters showing total graves laid to rest, respects paid, and community eulogies.
+
+### 4.2. Grave Sanctuary & Cemetery Feed (`/cemetery`)
 - **Real-Time Cemetery Feed:** Browse public project graves laid to rest by the community.
 - **Multi-Vector Search:** Instant client-side filtering matching project names, technology stacks, or author usernames.
 - **Developer Shortcut Search:** Direct handle navigation allowing users to jump straight to any developer's public crypt (`/user/:username`).
 - **Interactive Grave Cards:** Cards display the project lifespan, taxonomy badge, tech stack tags, respect count, and eulogy tallies.
 
-### 4.2. Burial Ritual & Project Creation (`/submit`)
+### 4.3. Burial Ritual & Project Creation (`/submit`)
 - **Structured Grave Data:**
   - **Project Name:** The identity of the fallen application.
   - **Lifespan Duration:** Freeform time description (e.g., "3 intense weekends", "8 months of late nights").

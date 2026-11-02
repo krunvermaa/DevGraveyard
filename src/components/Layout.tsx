@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Atmosphere } from './Atmosphere';
 import { useAuth } from '../contexts/AuthContext';
-import { Menu, X, PlusCircle, MessageSquare, Trophy, Clock, User, Ghost, Home as HomeIcon } from 'lucide-react';
+import { Menu, X, PlusCircle, MessageSquare, Trophy, Clock, User, Ghost, Home as HomeIcon, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface LayoutProps {
@@ -42,6 +42,30 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           {/* Desktop & Laptop Navigation */}
           {user && (
             <nav className="hidden md:flex items-center gap-1.5 lg:gap-2.5">
+              <Link
+                to="/home"
+                className={`group flex items-center gap-1.5 lg:gap-2 px-2.5 lg:px-3 py-1.5 rounded-lg border font-mono text-xs transition-all cursor-pointer ${
+                  location.pathname === '/home'
+                    ? 'bg-[#c53030]/20 border-[#c53030] text-white font-bold'
+                    : 'bg-zinc-900/60 border-zinc-800 text-zinc-300 hover:text-white hover:border-[#c53030]/60'
+                }`}
+              >
+                <HomeIcon className={`w-3.5 h-3.5 text-[#c53030] shrink-0 transition-all ${location.pathname === '/home' ? 'drop-shadow-[0_0_8px_rgba(197,48,48,0.8)]' : 'opacity-90 group-hover:opacity-100'}`} />
+                <span>Home</span>
+              </Link>
+
+              <Link
+                to="/cemetery"
+                className={`group flex items-center gap-1.5 lg:gap-2 px-2.5 lg:px-3 py-1.5 rounded-lg border font-mono text-xs transition-all cursor-pointer ${
+                  location.pathname === '/cemetery'
+                    ? 'bg-[#c53030]/20 border-[#c53030] text-white font-bold'
+                    : 'bg-zinc-900/60 border-zinc-800 text-zinc-300 hover:text-white hover:border-[#c53030]/60'
+                }`}
+              >
+                <Search className={`w-3.5 h-3.5 text-[#c53030] shrink-0 transition-all ${location.pathname === '/cemetery' ? 'drop-shadow-[0_0_8px_rgba(197,48,48,0.8)]' : 'opacity-90 group-hover:opacity-100'}`} />
+                <span>Cemetery</span>
+              </Link>
+
               <Link
                 to="/submit"
                 className={`group flex items-center gap-1.5 lg:gap-2 px-2.5 lg:px-3 py-1.5 rounded-lg border font-mono text-xs transition-all cursor-pointer ${
@@ -159,6 +183,18 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                   }`}
                 >
                   <HomeIcon className={`w-4 h-4 text-[#c53030] ${location.pathname === '/home' ? 'drop-shadow-[0_0_8px_rgba(197,48,48,0.8)]' : ''}`} />
+                  <span>Home</span>
+                </Link>
+
+                <Link
+                  to="/cemetery"
+                  className={`flex items-center gap-2 p-2.5 rounded-lg border font-mono text-xs transition-colors ${
+                    location.pathname === '/cemetery'
+                      ? 'bg-[#c53030]/20 border-[#c53030] text-white font-bold'
+                      : 'bg-zinc-900/60 border-zinc-800 text-zinc-300 hover:text-white hover:border-[#c53030]/60'
+                  }`}
+                >
+                  <Search className={`w-4 h-4 text-[#c53030] ${location.pathname === '/cemetery' ? 'drop-shadow-[0_0_8px_rgba(197,48,48,0.8)]' : ''}`} />
                   <span>Cemetery</span>
                 </Link>
 

@@ -23,8 +23,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
 
   const [bio, setBio] = useState(userProfile?.bio || '');
   const [github, setGithub] = useState(userProfile?.github || '');
-  const [instagram, setInstagram] = useState(userProfile?.instagram || '');
-  const [whatsapp, setWhatsapp] = useState(userProfile?.whatsapp || '');
   const [isUpdatingSocials, setIsUpdatingSocials] = useState(false);
   const [socialsSuccess, setSocialsSuccess] = useState('');
   const [socialsError, setSocialsError] = useState('');
@@ -46,9 +44,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
       const userRef = doc(db, 'users', user.uid);
       await updateDoc(userRef, {
         bio: bio.trim(),
-        github: github.trim(),
-        instagram: instagram.trim(),
-        whatsapp: whatsapp.trim()
+        github: github.trim()
       });
       await refreshProfile();
       setSocialsSuccess('Memorial profile & links updated!');
@@ -252,29 +248,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
                     placeholder="octocat or https://github.com/octocat"
                     className="w-full bg-zinc-900 border-zinc-800 focus:border-zinc-700 text-xs"
                   />
-                </div>
-
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label htmlFor="user_instagram" className="block text-[11px] font-mono text-zinc-400 mb-1">Instagram</label>
-                    <Input 
-                      id="user_instagram"
-                      value={instagram}
-                      onChange={(e) => setInstagram(e.target.value)}
-                      placeholder="@handle"
-                      className="w-full bg-zinc-900 border-zinc-800 focus:border-zinc-700 text-xs"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="user_whatsapp" className="block text-[11px] font-mono text-zinc-400 mb-1">WhatsApp</label>
-                    <Input 
-                      id="user_whatsapp"
-                      value={whatsapp}
-                      onChange={(e) => setWhatsapp(e.target.value)}
-                      placeholder="+123456789"
-                      className="w-full bg-zinc-900 border-zinc-800 focus:border-zinc-700 text-xs"
-                    />
-                  </div>
                 </div>
 
                 <Button 

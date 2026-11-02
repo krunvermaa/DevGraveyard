@@ -241,7 +241,7 @@ export const SharedGravesViewer: React.FC<SharedGravesViewerProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Header with Title and Stats Counter */}
+      {/* Header with Title */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-800/80">
         <div className="flex items-center gap-3.5">
           <div className="w-11 h-11 rounded-xl bg-red-950/30 border border-red-900/50 flex items-center justify-center text-red-400 shadow-[0_0_20px_rgba(197,48,48,0.2)] shrink-0">
@@ -255,88 +255,6 @@ export const SharedGravesViewer: React.FC<SharedGravesViewerProps> = ({
               Exchanged tombstones & spectral records between cryptkeepers
             </p>
           </div>
-        </div>
-
-        {/* Stats Counter Filter Buttons & Quick Action */}
-        <div className="flex items-center gap-2 font-mono text-xs flex-wrap">
-          {/* ALL Badge Filter Button */}
-          <button
-            type="button"
-            onClick={() => setActiveTab('all')}
-            className={`px-3 py-1.5 rounded-xl border transition-all cursor-pointer flex items-center gap-2 shadow-sm select-none touch-manipulation active:scale-95 ${
-              activeTab === 'all'
-                ? 'bg-[#c53030]/25 border-[#c53030]/80 text-white font-bold shadow-[0_0_14px_rgba(197,48,48,0.35)] ring-1 ring-[#c53030]/60'
-                : 'bg-zinc-900/80 border-zinc-800 text-zinc-300 hover:border-zinc-700 hover:text-white'
-            }`}
-            title="Filter by all dispatches"
-            aria-pressed={activeTab === 'all'}
-          >
-            <span className={`uppercase tracking-wider text-[10px] ${activeTab === 'all' ? 'text-red-300 font-bold' : 'text-zinc-500'}`}>
-              All
-            </span>
-            <span className={`px-1.5 py-0.5 rounded-md font-bold text-xs transition-colors ${
-              activeTab === 'all' ? 'bg-[#c53030] text-white shadow-sm' : 'bg-zinc-800 text-white'
-            }`}>
-              {stats.total}
-            </span>
-          </button>
-
-          {/* RECEIVED Badge Filter Button */}
-          <button
-            type="button"
-            onClick={() => setActiveTab('received')}
-            className={`px-3 py-1.5 rounded-xl border transition-all cursor-pointer flex items-center gap-2 shadow-sm select-none touch-manipulation active:scale-95 ${
-              activeTab === 'received'
-                ? 'bg-red-950/40 border-red-500/80 text-red-200 font-bold shadow-[0_0_14px_rgba(197,48,48,0.35)] ring-1 ring-red-500/60'
-                : 'bg-red-950/20 border-red-900/40 text-red-300/80 hover:border-red-900/70 hover:text-red-200'
-            }`}
-            title="Filter by received dispatches"
-            aria-pressed={activeTab === 'received'}
-          >
-            <ArrowDownLeft className="w-3.5 h-3.5 text-red-400" />
-            <span className="text-red-400 uppercase tracking-wider text-[10px] font-bold">
-              Received
-            </span>
-            <span className={`px-1.5 py-0.5 rounded-md font-bold text-xs transition-colors ${
-              activeTab === 'received' ? 'bg-red-600 text-white shadow-sm' : 'bg-red-900/40 text-red-200'
-            }`}>
-              {stats.received}
-            </span>
-          </button>
-
-          {/* SENT Badge Filter Button */}
-          <button
-            type="button"
-            onClick={() => setActiveTab('sent')}
-            className={`px-3 py-1.5 rounded-xl border transition-all cursor-pointer flex items-center gap-2 shadow-sm select-none touch-manipulation active:scale-95 ${
-              activeTab === 'sent'
-                ? 'bg-[#c53030]/25 border-[#c53030]/80 text-white font-bold shadow-[0_0_14px_rgba(197,48,48,0.35)] ring-1 ring-[#c53030]/60'
-                : 'bg-zinc-900/80 border-zinc-800 text-zinc-300 hover:border-zinc-700 hover:text-white'
-            }`}
-            title="Filter by sent dispatches"
-            aria-pressed={activeTab === 'sent'}
-          >
-            <ArrowUpRight className="w-3.5 h-3.5 text-zinc-400" />
-            <span className={`uppercase tracking-wider text-[10px] ${activeTab === 'sent' ? 'text-red-300 font-bold' : 'text-zinc-400'}`}>
-              Sent
-            </span>
-            <span className={`px-1.5 py-0.5 rounded-md font-bold text-xs transition-colors ${
-              activeTab === 'sent' ? 'bg-[#c53030] text-white shadow-sm' : 'bg-zinc-800 text-white'
-            }`}>
-              {stats.sent}
-            </span>
-          </button>
-
-          {/* Quick Action Button: Dispatch Grave */}
-          <button
-            type="button"
-            onClick={handleOpenDispatch}
-            className="px-3.5 py-1.5 rounded-xl bg-[#c53030]/20 hover:bg-[#c53030]/30 border border-[#c53030]/50 hover:border-[#c53030] text-red-300 hover:text-white text-xs font-mono font-bold tracking-wider transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(197,48,48,0.2)] cursor-pointer whitespace-nowrap active:scale-95 select-none touch-manipulation"
-            title="Dispatch a tombstone to a comrade"
-          >
-            <Send className="w-3.5 h-3.5 text-red-400" />
-            <span>[ + Dispatch Grave ]</span>
-          </button>
         </div>
       </div>
 

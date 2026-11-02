@@ -35,7 +35,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             </div>
             <div className="flex flex-col">
               <span className="font-bold tracking-tight text-lg sm:text-xl md:text-2xl uppercase font-mono group-hover:text-[#ef4444] transition-colors duration-300 text-[#c53030]">Dev Graveyard</span>
-              <span className="text-[9px] sm:text-[10px] text-zinc-400 font-mono tracking-widest uppercase">Est. 2024</span>
+              <span className="text-[9px] sm:text-[10px] text-zinc-400 font-mono tracking-widest uppercase">Est. 2026</span>
             </div>
           </Link>
           

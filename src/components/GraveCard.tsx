@@ -100,24 +100,37 @@ export const GraveCard: React.FC<GraveCardProps> = ({ grave, index = 0, classNam
       <div className="absolute bottom-[-5px] w-48 h-8 bg-black blur-md rounded-[100%] z-0 opacity-80 group-hover:w-56 group-hover:opacity-100 transition-all duration-500" />
 
       {/* User Avatar Label */}
-      {grave.user_name && !grave.is_anonymous && (
-        <Link 
-          to={`/user/${grave.user_name}`}
-          onClick={(e) => e.stopPropagation()}
-          className="absolute -bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900 border border-zinc-800 shadow-lg z-20 hover:bg-zinc-800 hover:border-zinc-600 transition-colors whitespace-nowrap max-w-[200px]"
-        >
-          {grave.user_avatar && (
-            <img 
-               src={grave.user_avatar} 
-               alt={grave.user_name} 
-               className="w-5 h-5 rounded-full object-cover bg-zinc-950 p-0.5 border border-zinc-700 shrink-0" 
-             />
-          )}
-          <span className="text-[10px] font-mono text-zinc-300 uppercase tracking-wider truncate">
-            {grave.user_name}
-          </span>
-        </Link>
-      )}
+      <div className="absolute -bottom-9 left-1/2 -translate-x-1/2 z-30">
+        {!grave.is_anonymous && grave.user_name ? (
+          <Link 
+            to={`/user/${grave.user_name}`}
+            onClick={(e) => e.stopPropagation()}
+            className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-zinc-900/95 border border-zinc-700/80 hover:border-[#c53030]/80 shadow-[0_4px_12px_rgba(0,0,0,0.7)] hover:bg-zinc-800 transition-all whitespace-nowrap max-w-[200px] group/user cursor-pointer"
+            title={`View @${grave.user_name}'s crypt`}
+          >
+            {grave.user_avatar ? (
+              <img 
+                 src={grave.user_avatar} 
+                 alt={grave.user_name} 
+                 className="w-4 h-4 rounded-full object-cover bg-zinc-950 p-0.5 border border-zinc-700 shrink-0" 
+               />
+            ) : (
+              <span className="text-[10px]">👤</span>
+            )}
+            <span className="text-[11px] font-mono tracking-wider truncate">
+              <span className="text-zinc-500 font-normal">by </span>
+              <span className="text-zinc-200 font-semibold group-hover/user:text-white">@{grave.user_name}</span>
+            </span>
+          </Link>
+        ) : (
+          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-zinc-950/90 border border-zinc-800/80 shadow-md whitespace-nowrap">
+            <span className="text-[10px]">👻</span>
+            <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">
+              Anonymous
+            </span>
+          </div>
+        )}
+      </div>
 
       {/* GitHub Link Icon */}
       {grave.github_link && (

@@ -52,8 +52,8 @@ export const Cemetery: React.FC = () => {
     <motion.div 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ duration: 0.8 }}
-      className="space-y-16 md:space-y-24 max-w-6xl mx-auto mb-20 px-4 sm:px-6 lg:px-8"
+      transition={{ duration: 0.6 }}
+      className="space-y-12 md:space-y-16 max-w-6xl mx-auto mb-24 px-4 sm:px-6 lg:px-8"
     >
       {/* Detail Modal */}
       <AnimatePresence>
@@ -65,40 +65,14 @@ export const Cemetery: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* Hero Section */}
-      <section className="flex flex-col items-center justify-center text-center py-10 md:py-16 space-y-6 relative">
-        <motion.div 
-          initial={{ y: -30, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="space-y-4 w-full max-w-2xl relative z-10 px-4"
-        >
-          <motion.h1 
-            className="font-bold tracking-tighter font-mono drop-shadow-[0_0_15px_rgba(205,32,32,0.5)] leading-tight text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-[96px] w-full text-center text-[#b91c1c]"
-          >
-            The Cemetery
-          </motion.h1>
-          <p className="text-sm sm:text-base md:text-lg lg:text-xl text-zinc-300 leading-relaxed font-serif font-light max-w-xl mx-auto italic">
-            A resting place for abandoned developer projects — and the lessons they left behind.
-          </p>
-        </motion.div>
-        
-        <motion.div
-          initial={{ y: 30, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-        >
-          <Link to="/submit" className="relative z-10 group inline-block">
-            <Button className="h-10 px-6 text-sm uppercase tracking-widest font-mono border border-[#c53030]/30 bg-surface/50 text-[#ffffff] hover:text-white hover:bg-zinc-800 hover:border-[#c53030] transition-all shadow-[0_0_15px_rgba(223,54,54,0.2)] hover:shadow-[0_0_30px_rgba(223,54,54,0.5)] backdrop-blur-md cursor-pointer">
-              Bury a Project
-            </Button>
-            {/* Subtle glow behind button */}
-            <div className="absolute inset-0 -z-10 bg-[#c53030]/20 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-1000 animate-pulse" />
-          </Link>
-        </motion.div>
-      </section>
+      {/* Heading matching Confessions/Pantheon style */}
+      <div className="w-full max-w-2xl mx-auto mb-6 mt-4 text-center">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold font-serif text-white tracking-widest uppercase drop-shadow-[0_0_15px_rgba(255,255,255,0.2)] border-b border-white/10 pb-4 inline-block">
+          The Cemetery
+        </h1>
+      </div>
 
-      {/* Grid */}
+      {/* Search & Grid Controls */}
       <section>
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-12 pb-4 gap-4">
           <div className="flex-1 w-full max-w-md relative">
@@ -153,16 +127,14 @@ export const Cemetery: React.FC = () => {
             )}
           </motion.div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-32 md:gap-y-40 mt-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-28 md:gap-y-36 mt-8">
             {filteredGraves.map((grave, index) => (
               <div 
                 key={grave.id} 
                 className="group relative hover:z-50 transition-all duration-300 animate-fade-in-up"
                 style={{
                   animationDelay: `${Math.min((index % 6) * 0.06, 0.36)}s`,
-                  animationFillMode: 'both',
-                  contentVisibility: 'auto',
-                  containIntrinsicSize: '0 300px'
+                  animationFillMode: 'both'
                 }}
               >
                 <GraveCard 

@@ -1,4 +1,4 @@
-# Dev Graveyard 🪦 — Complete Project Documentation & Architectural Summary
+# Dev Graveyard 🪦 : Complete Project Documentation & Architectural Summary
 
 > **"Not every project survives. Some still teach."**  
 > *Requiescat in Pace*
@@ -47,7 +47,7 @@ Dev Graveyard combines modern web performance with an atmospheric, dark-gothic v
 ## 4. Core Features & User Journey
 
 ### 4.1. The Grand Portal & Home Dashboard (`/home`)
-- **Mission & Manifesto:** Introduces newcomers to the core philosophy of Dev Graveyard — celebrating failed experiments and preserving vital architectural lessons.
+- **Mission & Manifesto:** Introduces newcomers to the core philosophy of Dev Graveyard: celebrating failed experiments and preserving vital architectural lessons.
 - **Platform Feature Guide:** Comprehensive onboarding for newbies explaining the Cemetery, Burial Ritual, GraveScore, Confessions, and Pantheon.
 - **Interactive FAQ Accordion:** Professional FAQ answering top developer questions (project eligibility, GitHub privacy, anonymous burials, GraveScore calculations, and tributes).
 - **Live Cemetery Pulse Metrics:** Real-time counters showing total graves laid to rest, respects paid, and community eulogies.
@@ -103,7 +103,7 @@ The platform incorporates a multi-factor scoring engine that evaluates each grav
 - ⚔️ **Monument of the Slain** (300–699 pts): A battle-tested monolith bearing scars and recognized by peers.
 - 👑 **Mythic Mausoleum** (700+ pts): A legendary memorial honoring monumental effort and technical depth.
 
-### 4.5. Pantheon of the Dead (Leaderboard — `/leaderboard`)
+### 4.5. Pantheon of the Dead (Leaderboard : `/leaderboard`)
 - Ranks the most celebrated open-source projects resting in the graveyard.
 - Requires verified GitHub repository links to qualify for ranking.
 - Automatically sorted by the dynamic **GraveScore** algorithm.
@@ -175,4 +175,4 @@ The application enforces a least-privilege security policy governed by Firestore
 
 ---
 
-*Dev Graveyard — Transforming abandoned code into timeless wisdom.*
+*Dev Graveyard : Transforming abandoned code into timeless wisdom.*

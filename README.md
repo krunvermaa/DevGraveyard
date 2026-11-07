@@ -1,39 +1,123 @@
 # 🪦 DevGraveyard
 
+<div align="center">
+
 > **"Not every project survives. Some still teach."**
 > 
-> DevGraveyard preserves the wisdom hidden inside abandoned software projects. It gives dead code a dignified resting place while generating structured failure post-mortems and practical prevention checklists so the community can learn from recurring mistakes.
+> DevGraveyard gives abandoned software, dead side projects, and fallen repositories a dignified resting place. Transform graveyard code into institutional wisdom through structured failure post-mortems, interactive memorial rituals, and community tributes.
 
-[![Vercel Deployment](https://img.shields.io/badge/Deployed-Vercel-black?style=flat-square&logo=vercel)](https://devgraveyard.vercel.app)
-[![React 19](https://img.shields.io/badge/React-19-blue?style=flat-square&logo=react)](https://react.dev)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind-CSS-38B2AC?style=flat-square&logo=tailwind-css)](https://tailwindcss.com)
-[![Firebase](https://img.shields.io/badge/Firebase-Auth%20%26%20Firestore-orange?style=flat-square&logo=firebase)](https://firebase.google.com)
+<br />
 
----
+[![Live Demo](https://img.shields.io/badge/Live_Demo-devgraveyard.vercel.app-10b981?style=for-the-badge&logo=vercel&logoColor=white)](https://devgraveyard.vercel.app)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
-## 🌟 Features
+<br />
 
-- **Tombstone Memorials**: Inscribe project name, cause of death, lifespan, technology stack, and lessons learned.
-- **Structured Failure Post-Mortems**: Evidence-grounded root cause hypothesis, contributing factors, missed warning signs, and actionable prevention steps.
-- **Pay Respects & Eulogies**: Interactive 'RIP' respect counter, eulogy wall, and community tributes.
-- **Social & Graveyard Network**: Developer profiles, pixel avatars, friend connections, and direct grave sharing.
-- **Anonymous Burials**: Optional unmarked graves with strict privacy separation to share hard truths safely.
-- **Gothic Developer Aesthetic**: Dark atmospheric UI, sound effects, particle soul animations, and shareable memorial cards.
+[![React 19](https://img.shields.io/badge/React_19-20232A?style=flat-square&logo=react&logoColor=61DAFB)](https://react.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript_5.8-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS_3.4-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white)](https://tailwindcss.com)
+[![Vite](https://img.shields.io/badge/Vite_6-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vitejs.dev)
+[![Firebase](https://img.shields.io/badge/Firebase_Auth_&_Firestore-FFCA28?style=flat-square&logo=firebase&logoColor=black)](https://firebase.google.com)
+[![Vercel](https://img.shields.io/badge/Vercel_Hosting-000000?style=flat-square&logo=vercel&logoColor=white)](https://vercel.com)
 
----
-
-## 🛠️ Tech Stack
-
-- **Frontend**: React 19, TypeScript, Vite
-- **Styling & Animation**: Tailwind CSS, `motion/react`, `lucide-react`
-- **Backend / Storage**: Firebase Authentication (GitHub & Google OAuth) & Cloud Firestore
-- **AI Failure Analysis**: Gemini 1.5 Flash API with intelligent domain heuristic fallback engine
-- **Deployment**: Vercel
+</div>
 
 ---
 
-## 🚀 Getting Started
+## ⚰️ Why DevGraveyard?
+
+Every software engineer maintains a closet of forgotten repositories—grand ideas crushed by scope creep, burn-out, market indifference, or architectural collapse. 
+
+DevGraveyard transforms developer guilt into collective knowledge:
+1. **Catharsis**: Inscribe an epitaph and lay your dead repo to rest.
+2. **Analysis**: AI-assisted autopsies extract root causes, missed signals, and lessons learned.
+3. **Respect**: The community pays respects, lights candles, and recites eulogies.
+
+```
+       .---.
+      /     \
+     | R.I.P |
+     |       |
+     | Your  |
+     | Repo  |
+     |  2026 |
+  \\\|       |///
+^^^^^^^^^^^^^^^^^^^^
+```
+
+---
+
+## 🌟 Core Features
+
+### 1. ⚱️ The Burial Ritual
+- An interactive funeral rite for codebases. Inscribe the project title, cause of death (e.g. *Scope Creep*, *Tech Debt Collapse*, *Burnout*, *AI Superseded*), lifespan dates, tech stack chips, and final epitaph.
+- Choose between **Honored Inscriptions** (tied to your developer profile) or **Unmarked Graves** (100% anonymous burials for controversial or sensitive projects).
+
+### 2. ⚖️ GraveScore™ Engine
+- Algorithmic rating determining the tragedy and weight of the abandonment.
+- Calculates an objective composite score based on:
+  - Codebase complexity and size
+  - Duration of active life prior to burial
+  - Financial & emotional sunk cost
+  - Number of abandoned Git commits and discarded dependencies
+
+### 3. 🕯️ Press 'F' to Pay Respects
+- Real-time interactive tribute engine honoring the legendary gaming meme.
+- Visitors can press `F` (or tap the floral button) to pay respects, incrementing community reverence.
+- Leave heartfelt eulogies, light interactive candles, and leave floral offerings on any tombstone.
+
+### 4. 🗝️ Confessions Crypt
+- A somber community chamber where engineers whisper anonymous confessions:
+  - *"I deleted the production database and blamed an AWS outage."*
+  - *"We raised $2M on a pitch deck for an app that was just 10,000 lines of hardcoded `if` statements."*
+- Filter by upvotes, tags, and recency with zero tracking or identity leakage.
+
+### 5. 🎴 Tombstone Share Cards
+- High-fidelity exportable digital gravestones generated on the fly using `html2canvas`.
+- Includes customized gothic typography, project cause-of-death ribbons, dynamic QR codes pointing directly to the grave URL, and one-click download for sharing on X (Twitter), LinkedIn, or Discord.
+
+### 6. 🧠 AI Failure Post-Mortems
+- Built-in Gemini 1.5 Flash synthesis engine paired with an offline heuristic fallback autopsy generator.
+- Generates structured, evidence-grounded post-mortems featuring:
+  - Primary root cause hypothesis
+  - Warning signs missed during development
+  - Systemic failure taxonomy
+  - Actionable 5-point prevention checklist for future endeavors
+
+---
+
+## 🛠️ Architecture & Tech Stack
+
+```
+DevGraveyard Architecture
+┌─────────────────────────────────────────────────────────────┐
+│                      Client (React 19)                      │
+│  Tailwind CSS 3.4 • Motion/React • HTML5 Audio Engine       │
+│  html2canvas Export • Lucide Icons • Space Mono / Crimson   │
+└──────────────┬──────────────────────────────┬───────────────┘
+               │                              │
+               ▼                              ▼
+    ┌──────────────────────┐      ┌───────────────────────┐
+    │  Firebase Firestore  │      │   Google Gemini API   │
+    │  & OAuth (GitHub)    │      │   (Post-Mortem LLM)   │
+    │  Strict Sec Rules    │      │   + Fallback Engine   │
+    └──────────────────────┘      └───────────────────────┘
+```
+
+- **Framework**: [React 19](https://react.dev) with [TypeScript](https://www.typescriptlang.org)
+- **Bundler & Tooling**: [Vite 6](https://vitejs.dev) with custom rollup chunk splitting
+- **Styling**: [Tailwind CSS 3.4](https://tailwindcss.com) + [PostCSS](https://postcss.org) + [Autoprefixer](https://github.com/postcss/autoprefixer)
+- **Database & Auth**: [Firebase v12](https://firebase.google.com) (Firestore & Firebase Auth)
+- **Animations**: `motion/react` + custom keyframes (`soul-float`, `grave-descend`, `mist-rise`)
+- **Card Generation**: `html2canvas` + `qrcode.react`
+
+---
+
+## 🚀 Quickstart Guide
+
+### Prerequisites
+- Node.js `18.x` or `20.x`+
+- npm `9.x`+
 
 ### 1. Clone the repository
 ```bash
@@ -47,15 +131,14 @@ npm install
 ```
 
 ### 3. Configure environment variables
-Create a `.env.local` file in the root directory from `.env.example`:
-
+Create a `.env.local` file in the root directory:
 ```bash
 cp .env.example .env.local
 ```
 
-Populate `.env.local` with your Firebase project credentials:
+Populate the keys in `.env.local`:
 ```env
-VITE_FIREBASE_API_KEY=your_api_key
+VITE_FIREBASE_API_KEY=your_firebase_api_key
 VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
 VITE_FIREBASE_PROJECT_ID=your_project_id
 VITE_FIREBASE_STORAGE_BUCKET=your_project.firebasestorage.app
@@ -70,37 +153,35 @@ VITE_GEMINI_API_KEY=your_gemini_api_key
 ```bash
 npm run dev
 ```
-
-Visit [http://localhost:3000](http://localhost:3000) to view the graveyard.
+Open [http://localhost:3000](http://localhost:3000) to view the graveyard locally.
 
 ### 5. Build for production
 ```bash
 npm run build
 ```
+The optimized bundle will be compiled into `dist/`.
 
 ---
 
-## 🏛️ Project Structure
+## 🔒 Security & Privacy
 
-```
-DevGraveyard/
-├── src/
-│   ├── components/       # UI primitives, GraveCard, GraveModal, ShareCards
-│   ├── contexts/         # AuthContext and user session
-│   ├── pages/            # Home, SubmitGrave, Profile, GraveView, Chats, Confessions
-│   ├── services/         # graveService, userService, accountService
-│   ├── types.ts          # Core schema interfaces (Grave, User, Eulogy)
-│   ├── firebase.ts       # Firebase initialization from environment variables
-│   ├── pixelAvatars.ts   # Pixel art avatar library
-│   └── index.tsx         # React application entry point
-├── public/               # Static assets & icons
-├── firestore.rules       # Strict access control rules
-├── vercel.json           # SPA rewrites & security headers
-├── vite.config.ts        # Vite configuration
-└── tsconfig.json         # TypeScript compiler configuration
-```
+- **Declarative Firestore Rules**: Access permissions are strictly managed in `firestore.rules`.
+- **Anonymous Graves**: Unmarked graves scrub author IDs, preventing retrospective attribution.
+- **Client Sanitization**: All tombstone inscriptions and confessions are validated before being committed to the database.
+- **No Unsafe Secrets**: API keys in `.env.local` are scoped to read/write rules gated by user authentication and Firestore security policies.
+
+---
+
+## 🤝 Contributing
+
+Contributions are warmly welcomed! Please read our [CONTRIBUTING.md](file:///Users/karanverma/Desktop/Projects/DevGraveyard/CONTRIBUTING.md) guide for information on code standards, commit conventions, and the gothic design philosophy.
 
 ---
 
 ## 📜 License
-MIT License. Created for the developer community.
+
+Distributed under the MIT License. See [LICENSE](file:///Users/karanverma/Desktop/Projects/DevGraveyard/LICENSE) for more information.
+
+<div align="center">
+  <sub>DevGraveyard is maintained with 🖤 for the global developer community.</sub>
+</div>

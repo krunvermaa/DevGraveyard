@@ -1,7 +1,25 @@
 {
   "name": "dev-graveyard",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "Where abandoned side projects, forgotten repositories, and dead code rest in eternal peace.",
+  "homepage": "https://devgraveyard.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/krunvermaa/DevGraveyard.git"
+  },
+  "keywords": [
+    "side-projects",
+    "developer-tools",
+    "post-mortem",
+    "failure",
+    "firebase",
+    "react",
+    "vite",
+    "gothic",
+    "memorial",
+    "engineering"
+  ],
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -27,6 +45,9 @@
   "devDependencies": {
     "@types/node": "^22.14.0",
     "@vitejs/plugin-react": "^5.0.0",
+    "autoprefixer": "^10.6.2",
+    "postcss": "^8.5.32",
+    "tailwindcss": "^3.4.19",
     "typescript": "~5.8.2",
     "vite": "^6.2.0"
   }

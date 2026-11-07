@@ -169,7 +169,7 @@ export const GithubRepoPicker: React.FC<GithubRepoPickerProps> = ({ onSelectRepo
     setError(null);
 
     try {
-      githubProvider.addScope('repo');
+      githubProvider.addScope('public_repo');
 
       let ghToken: string | undefined;
       let ghUsername: string | undefined;

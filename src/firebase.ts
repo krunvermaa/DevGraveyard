@@ -54,8 +54,8 @@ export { GithubAuthProvider, GoogleAuthProvider, signInWithPopup, signOut };
 export const githubProvider = new GithubAuthProvider();
 export const googleProvider = new GoogleAuthProvider();
 
-// Request repo scope for GitHub repository access
-githubProvider.addScope('repo');
+// Request minimal public_repo scope for GitHub repository access
+githubProvider.addScope('public_repo');
 
 // Request standard email and profile scopes for seamless Google authentication
 googleProvider.addScope('email');

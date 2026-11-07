@@ -13,7 +13,7 @@ const envExamplePath = path.join(rootDir, '.env.example');
 const firebasercPath = path.join(rootDir, '.firebaserc');
 
 // Target account
-const TARGET_ACCOUNT = 'karan.verma.gj@gmail.com';
+const TARGET_ACCOUNT = process.env.FIREBASE_ACCOUNT || '';
 
 function printHeader() {
   console.log('\n======================================================');
@@ -86,13 +86,13 @@ function updateEnvLocal(config) {
   };
 
   // Preserve existing Gemini API key if present
-  const geminiMatch = existingContent.match(/VITE_GEMINI_API_KEY\s*=\s*(.*)/i);
+  const geminiMatch = existingContent.match(/(?:VITE_)?GEMINI_API_KEY\s*=\s*(.*)/i);
   const geminiKey = (geminiMatch && geminiMatch[1]) ? geminiMatch[1].trim() : '';
 
   const newContent = [
     '# ==============================================================================',
     '# DevGraveyard Local Environment Variables',
-    `# Account: ${TARGET_ACCOUNT}`,
+    `# Account: ${TARGET_ACCOUNT || 'Default'}`,
     `# Bound on: ${new Date().toISOString()}`,
     '# ==============================================================================',
     `VITE_FIREBASE_API_KEY=${keys.VITE_FIREBASE_API_KEY}`,
@@ -105,8 +105,8 @@ function updateEnvLocal(config) {
     '# Optional: Leave blank to use default Firestore database "(default)"',
     `VITE_FIREBASE_DATABASE_ID=${keys.VITE_FIREBASE_DATABASE_ID}`,
     '',
-    '# Optional: Google AI Studio Gemini API Key for dynamic AI post-mortems',
-    `VITE_GEMINI_API_KEY=${geminiKey}`,
+    '# Optional: Google AI Studio Gemini API Key for serverless AI post-mortems',
+    `GEMINI_API_KEY=${geminiKey}`,
     '',
   ].join('\n');
 

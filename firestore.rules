@@ -39,6 +39,42 @@ service cloud.firestore {
              (!data.keys().hasAny(["github_link"]) || isValidGithubLink(data.github_link));
     }
 
+    // Check if the current user owns this grave
+    function isGraveOwner() {
+      return isSignedIn() &&
+             resource.data.keys().hasAll(['user_id']) &&
+             resource.data.user_id == request.auth.uid;
+    }
+
+    // Grave owners can update their own graves with valid data without transferring ownership or altering creation date
+    function isValidOwnerGraveUpdate() {
+      return isGraveOwner() &&
+             isValidGrave(incoming()) &&
+             (!incoming().keys().hasAny(['user_id']) || incoming().user_id == existing().user_id) &&
+             (!incoming().keys().hasAny(['created_at']) || incoming().created_at == existing().created_at);
+    }
+
+    // Non-owner signed-in users can ONLY update respects or eulogies (and optional rips list) without overwriting core fields
+    function isNonOwnerTributeUpdate() {
+      let diffKeys = incoming().diff(existing()).affectedKeys();
+      return isSignedIn() &&
+             diffKeys.hasOnly(['respects', 'eulogies', 'rips']) &&
+             (!diffKeys.hasAny(['respects']) || (
+               incoming().respects is number && (
+                 incoming().respects == existing().get('respects', 0) + 1 ||
+                 incoming().respects == existing().get('respects', 0) - 1
+               )
+             )) &&
+             (!diffKeys.hasAny(['eulogies']) || (
+               incoming().eulogies is list && incoming().eulogies.size() <= 500
+             )) &&
+             (!diffKeys.hasAny(['rips']) || (
+               incoming().rips is list && incoming().rips.size() <= 5000
+             )) &&
+             // Core fields are guaranteed immutable by affectedKeys check, but asserted explicitly for defense-in-depth:
+             (!diffKeys.hasAny(['project_name', 'cause_of_death', 'lesson_learned', 'user_id', 'created_at', 'tech_stack', 'lived_for', 'is_anonymous', 'github_link']));
+    }
+
     function isValidUser(data) {
       return data.keys().hasAll(['username']) &&
              data.username is string && data.username.size() >= 3 && data.username.size() <= 30;
@@ -51,6 +87,7 @@ service cloud.firestore {
     function isValidFriendRequest(data) {
       return data.keys().hasAll(['fromUserId', 'fromUsername', 'toUserId', 'status', 'createdAt']) &&
              data.fromUserId is string && data.toUserId is string &&
+             data.fromUserId != data.toUserId &&
              data.status in ['pending', 'accepted', 'rejected'];
     }
 
@@ -63,13 +100,23 @@ service cloud.firestore {
              data.graveId is string && data.fromUserId is string;
     }
 
+    function isValidConfession(data) {
+      return data.keys().hasAll(['text', 'createdAt']) &&
+             data.text is string && data.text.size() > 0 && data.text.size() <= 280 &&
+             (data.createdAt is timestamp || data.createdAt is string || data.createdAt is number) &&
+             (!data.keys().hasAny(['color']) || (data.color is string && data.color.size() <= 50)) &&
+             (!data.keys().hasAny(['rotation']) || data.rotation is number) &&
+             (!data.keys().hasAny(['category']) || (data.category is string && data.category.size() <= 50)) &&
+             (!data.keys().hasAny(['upvotes']) || data.upvotes is number);
+    }
+
     match /graves/{graveId} {
       // Allow read to all (public memorial cemetery and leaderboard)
       allow read: if true;
       // Allow create if user is signed in and provides valid grave data
       allow create: if isSignedIn() && isValidGrave(incoming());
-      // Allow updates to respects (press F) or eulogies for signed in users
-      allow update: if isSignedIn();
+      // Owner can update grave details, or signed-in community members can pay respects / leave eulogies
+      allow update: if isValidOwnerGraveUpdate() || isNonOwnerTributeUpdate();
       // Allow delete only if the user owns the grave
       allow delete: if isSignedIn() && resource.data.user_id == request.auth.uid;
     }
@@ -85,20 +132,22 @@ service cloud.firestore {
         // User can add themselves to someone else's friend list when accepting a request,
         // or add someone to their own list
         allow create: if isSignedIn() && (request.auth.uid == userId || request.auth.uid == friendId) && isValidFriend(incoming());
-        allow update: if isSignedIn() && (request.auth.uid == userId || request.auth.uid == friendId);
+        allow update: if isSignedIn() && (request.auth.uid == userId || request.auth.uid == friendId) && isValidFriend(incoming());
         allow delete: if isSignedIn() && (request.auth.uid == userId || request.auth.uid == friendId);
       }
       match /followers/{followerId} {
         allow read: if isSignedIn();
         allow create, delete: if isSignedIn() && (request.auth.uid == followerId || request.auth.uid == userId);
+        allow update: if false;
       }
       match /following/{followingId} {
         allow read: if isSignedIn();
         allow create, delete: if isSignedIn() && (request.auth.uid == userId || request.auth.uid == followingId);
+        allow update: if false;
       }
       match /shared_graves/{shareId} {
         allow read: if isSignedIn() && (request.auth.uid == userId || resource.data.fromUserId == request.auth.uid);
-        allow create: if isSignedIn() && isValidSharedGrave(incoming()) && incoming().fromUserId == request.auth.uid;
+        allow create: if isSignedIn() && isValidSharedGrave(incoming()) && incoming().fromUserId == request.auth.uid && (request.auth.uid == userId || incoming().toUserId == userId);
         allow update: if isSignedIn() && (request.auth.uid == userId || resource.data.fromUserId == request.auth.uid);
         allow delete: if isSignedIn() && (request.auth.uid == userId || resource.data.fromUserId == request.auth.uid);
       }
@@ -107,7 +156,7 @@ service cloud.firestore {
     match /usernames/{username} {
       allow read: if isSignedIn();
       allow create: if isSignedIn() && isValidUsernameRegistry(incoming()) && incoming().uid == request.auth.uid;
-      allow update: if isSignedIn() && (existing().uid == request.auth.uid || incoming().uid == request.auth.uid);
+      allow update: if isSignedIn() && existing().uid == request.auth.uid && incoming().uid == request.auth.uid;
       allow delete: if isSignedIn() && existing().uid == request.auth.uid;
     }
 
@@ -119,9 +168,12 @@ service cloud.firestore {
     }
 
     match /confessions/{confessionId} {
+      // Confessions are public to read
       allow read: if true;
-      allow create: if incoming().text is string && incoming().text.size() > 0 && incoming().text.size() <= 140;
-      allow update, delete: if true;
+      // Confessions can be created if validated properly
+      allow create: if isValidConfession(incoming());
+      // Confessions are permanent memorials: no public edits or deletions
+      allow update, delete: if false;
     }
   }
 }

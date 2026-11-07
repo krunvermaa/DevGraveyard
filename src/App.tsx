@@ -5,6 +5,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { UsernameSelection } from './components/UsernameSelection';
 
 // Lazy-loaded route components for fast initial load and light bundle
+const Landing = lazy(() => import('./pages/Landing').then(m => ({ default: m.Landing })));
 const Home = lazy(() => import('./pages/Home').then(m => ({ default: m.Home })));
 const Cemetery = lazy(() => import('./pages/Cemetery').then(m => ({ default: m.Cemetery })));
 const SubmitGrave = lazy(() => import('./pages/SubmitGrave').then(m => ({ default: m.SubmitGrave })));
@@ -16,6 +17,8 @@ const Confessions = lazy(() => import('./pages/Confessions').then(m => ({ defaul
 const Chats = lazy(() => import('./pages/Chats').then(m => ({ default: m.Chats })));
 const Leaderboard = lazy(() => import('./pages/Leaderboard').then(m => ({ default: m.Leaderboard })));
 const Upcoming = lazy(() => import('./pages/Upcoming').then(m => ({ default: m.Upcoming })));
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy').then(m => ({ default: m.PrivacyPolicy })));
+const TermsOfService = lazy(() => import('./pages/TermsOfService').then(m => ({ default: m.TermsOfService })));
 
 const PageLoader: React.FC = () => (
   <div className="min-h-[55vh] flex flex-col items-center justify-center space-y-4 animate-fade-in">
@@ -32,7 +35,7 @@ const PageLoader: React.FC = () => (
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, userProfile, loading } = useAuth();
   if (loading) return null;
-  if (!user) return <Navigate to="/" replace />;
+  if (!user) return <Navigate to="/login" replace />;
   if (user && !userProfile) return <UsernameSelection />;
   return <>{children}</>;
 };
@@ -44,18 +47,28 @@ const App: React.FC = () => {
         <Layout>
           <Suspense fallback={<PageLoader />}>
             <Routes>
-              <Route path="/" element={<Login />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
-              <Route path="/cemetery" element={<ProtectedRoute><Cemetery /></ProtectedRoute>} />
-              <Route path="/submit" element={<ProtectedRoute><SubmitGrave /></ProtectedRoute>} />
-              <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-              <Route path="/user/:username" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
+              {/* Public Sanctuary Routes (No Auth Wall) */}
+              <Route path="/" element={<Landing />} />
+              <Route path="/cemetery" element={<Cemetery />} />
               <Route path="/grave/:id" element={<GraveView />} />
               <Route path="/confessions" element={<Confessions />} />
-              <Route path="/chats" element={<ProtectedRoute><Chats /></ProtectedRoute>} />
               <Route path="/leaderboard" element={<Leaderboard />} />
               <Route path="/upcoming" element={<Upcoming />} />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="/terms" element={<TermsOfService />} />
+              
+              {/* Auth Gateway */}
+              <Route path="/login" element={<Login />} />
+
+              {/* Protected Personal Actions */}
+              <Route path="/home" element={<Home />} />
+              <Route path="/submit" element={<ProtectedRoute><SubmitGrave /></ProtectedRoute>} />
+              <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+              <Route path="/user/:username" element={<UserProfile />} />
+              <Route path="/chats" element={<ProtectedRoute><Chats /></ProtectedRoute>} />
+
+              {/* Fallback */}
+              <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </Suspense>
         </Layout>

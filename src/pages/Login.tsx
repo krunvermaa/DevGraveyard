@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { loginWithGithub, loginWithGoogle, isFirebaseConfigured, GithubAuthProvider } from '../firebase';
 import { getAdditionalUserInfo } from 'firebase/auth';
-import { Loader2, AlertCircle } from 'lucide-react';
+import { Loader2, AlertCircle, KeyRound, ShieldCheck, ArrowRight } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 
 const GithubIcon = () => (
@@ -100,18 +100,25 @@ export const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-[80vh] flex flex-col items-center justify-center animate-fade-in relative z-10 px-4">
-      <div className="max-w-md w-full space-y-8 p-8 border border-zinc-800 bg-surface/50 backdrop-blur-sm rounded-xl shadow-2xl relative overflow-hidden">
+    <div className="min-h-[80vh] flex flex-col items-center justify-center animate-fade-in relative z-10 px-4 py-8">
+      <div className="max-w-md w-full space-y-6 p-7 sm:p-8 border border-zinc-800 bg-surface/60 backdrop-blur-md rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.8)] relative overflow-hidden">
         
-        {/* Subtle top glow */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-1 bg-code-red/40 blur-sm"></div>
+        {/* Subtle top crimson glow */}
+        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[#c53030] to-transparent opacity-70"></div>
 
         <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold tracking-tighter text-[#c53030] font-sans">
-            Authentication
+          <div className="w-12 h-12 mx-auto rounded-xl bg-[#c53030]/10 border border-[#c53030]/30 flex items-center justify-center text-[#c53030] shadow-[0_0_20px_rgba(197,48,48,0.2)] mb-3">
+            <KeyRound className="w-5 h-5 animate-pulse" />
+          </div>
+
+          <span className="font-mono text-[10px] uppercase tracking-widest text-[#c53030] block">
+            Sanctuary Gateway
+          </span>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white font-mono">
+            Enter the Graveyard
           </h1>
-          <p className="text-sm text-zinc-400 font-mono">
-            Identify yourself to enter the graveyard.
+          <p className="text-xs sm:text-sm text-zinc-400 font-serif italic max-w-xs mx-auto">
+            "Where dead code finds peace and developers find wisdom."
           </p>
         </div>
 
@@ -123,31 +130,17 @@ export const Login: React.FC = () => {
         )}
 
         {error && (
-          <div className="p-4 bg-red-900/20 border border-red-500/30 rounded-md text-red-400 text-sm text-center font-mono">
+          <div className="p-3 bg-red-900/20 border border-red-500/30 rounded-lg text-red-400 text-xs text-center font-mono">
             {error}
           </div>
         )}
 
-        <div className="space-y-4">
-          <Button
-            onClick={() => handleLogin('google')}
-            disabled={isLoggingIn !== false} 
-            variant="secondary"
-            className="w-full h-12 flex items-center justify-center space-x-3 text-sm tracking-widest font-mono text-zinc-100 hover:text-white bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-700 hover:border-[#c53030]/60 font-semibold transition-all shadow-lg"
-          >
-            {isLoggingIn === 'google' ? (
-              <Loader2 className="w-5 h-5 animate-spin text-[#c53030]" />
-            ) : (
-              <GoogleIcon />
-            )}
-            <span>{isLoggingIn === 'google' ? 'Authenticating...' : 'Continue with Google'}</span>
-          </Button>
-
+        <div className="space-y-3 pt-1">
           <Button
             onClick={() => handleLogin('github')}
             disabled={isLoggingIn !== false} 
             variant="secondary"
-            className="w-full h-12 flex items-center justify-center space-x-3 text-sm tracking-widest font-mono text-zinc-100 hover:text-white bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-700 hover:border-[#c53030]/60 font-semibold transition-all shadow-lg"
+            className="w-full h-12 flex items-center justify-center space-x-3 text-xs sm:text-sm tracking-widest font-mono text-zinc-100 hover:text-white bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-700 hover:border-[#c53030]/60 font-semibold transition-all shadow-lg rounded-xl cursor-pointer"
           >
             {isLoggingIn === 'github' ? (
               <Loader2 className="w-5 h-5 animate-spin text-[#c53030]" />
@@ -156,7 +149,40 @@ export const Login: React.FC = () => {
             )}
             <span>{isLoggingIn === 'github' ? 'Authenticating...' : 'Continue with GitHub'}</span>
           </Button>
+
+          <Button
+            onClick={() => handleLogin('google')}
+            disabled={isLoggingIn !== false} 
+            variant="secondary"
+            className="w-full h-12 flex items-center justify-center space-x-3 text-xs sm:text-sm tracking-widest font-mono text-zinc-100 hover:text-white bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-700 hover:border-[#c53030]/60 font-semibold transition-all shadow-lg rounded-xl cursor-pointer"
+          >
+            {isLoggingIn === 'google' ? (
+              <Loader2 className="w-5 h-5 animate-spin text-[#c53030]" />
+            ) : (
+              <GoogleIcon />
+            )}
+            <span>{isLoggingIn === 'google' ? 'Authenticating...' : 'Continue with Google'}</span>
+          </Button>
         </div>
+
+        {/* Privacy & Trust Guarantee */}
+        <div className="pt-2 border-t border-zinc-900 text-center space-y-2">
+          <div className="flex items-center justify-center gap-1.5 text-[11px] font-mono text-zinc-500">
+            <ShieldCheck className="w-3.5 h-3.5 text-zinc-400" />
+            <span>Public profile only. We never access private code.</span>
+          </div>
+          <div className="flex items-center justify-center gap-4 text-[11px] font-mono text-zinc-500 pt-1">
+            <Link to="/cemetery" className="hover:text-zinc-300 inline-flex items-center gap-1 transition-colors">
+              <span>Browse Cemetery First</span>
+              <ArrowRight className="w-3 h-3" />
+            </Link>
+            <span>•</span>
+            <Link to="/privacy" className="hover:text-[#c53030] transition-colors">
+              Privacy Codex
+            </Link>
+          </div>
+        </div>
+
       </div>
     </div>
   );

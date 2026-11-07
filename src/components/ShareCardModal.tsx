@@ -1,10 +1,11 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Grave } from '../types';
 import { motion } from 'motion/react';
 import html2canvas from 'html2canvas';
 import { QRCodeCanvas } from 'qrcode.react';
 import { calculateGraveScore } from '../services/graveScoreService';
-import { Copy, Check, Download, X, Loader2, Sparkles, Image as ImageIcon } from 'lucide-react';
+import { trackCardShared } from '../services/analyticsService';
+import { Copy, Check, Download, X, Loader2, Sparkles, Image as ImageIcon, Link2, Share2, ExternalLink } from 'lucide-react';
 
 interface ShareCardModalProps {
   grave: Grave;
@@ -71,8 +72,16 @@ export const ShareCardModal: React.FC<ShareCardModalProps> = ({
   const [theme, setTheme] = useState<ThemeKey>('minimal-noir');
   const [format, setFormat] = useState<FormatKey>('square');
   const [isExporting, setIsExporting] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
   const [copiedSnippet, setCopiedSnippet] = useState(false);
   const [copiedImage, setCopiedImage] = useState(false);
+  const [canNativeShare, setCanNativeShare] = useState(false);
+
+  useEffect(() => {
+    if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+      setCanNativeShare(true);
+    }
+  }, []);
 
   const exportCardRef = useRef<HTMLDivElement>(null);
   const currentTheme = THEMES[theme];
@@ -143,11 +152,67 @@ export const ShareCardModal: React.FC<ShareCardModalProps> = ({
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
+      trackCardShared('download_png', { grave_id: grave.id, format, theme });
     } catch (err) {
       console.error('Download error:', err);
       alert('Could not download image. You can copy the memorial text snippet below.');
     } finally {
       setIsExporting(false);
+    }
+  };
+
+  const handleCopyLink = async () => {
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(qrUrl);
+      } else {
+        const textarea = document.createElement('textarea');
+        textarea.value = qrUrl;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+      }
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 2500);
+      trackCardShared('copy_link', { grave_id: grave.id, format, theme });
+    } catch (err) {
+      console.error('Copy link error:', err);
+    }
+  };
+
+  const handleShareTwitter = () => {
+    const text = `I laid my project "${grave.project_name}" to rest in the @DevGraveyard 🪦 Cause of death: ${grave.cause_of_death}. May its code rest in peace.`;
+    const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(qrUrl)}`;
+    window.open(shareUrl, '_blank', 'noopener,noreferrer,width=600,height=500');
+    trackCardShared('x', { grave_id: grave.id, format, theme });
+  };
+
+  const handleShareLinkedIn = () => {
+    const shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(qrUrl)}`;
+    window.open(shareUrl, '_blank', 'noopener,noreferrer,width=600,height=600');
+    trackCardShared('linkedin', { grave_id: grave.id, format, theme });
+  };
+
+  const handleNativeShare = async () => {
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try {
+        await navigator.share({
+          title: `${grave.project_name} | Dev Graveyard Memorial`,
+          text: `I laid my project "${grave.project_name}" to rest in the @DevGraveyard 🪦 Cause of death: ${grave.cause_of_death}. May its code rest in peace.`,
+          url: qrUrl,
+        });
+        trackCardShared('native', { grave_id: grave.id, format, theme });
+      } catch (err: any) {
+        if (err?.name !== 'AbortError') {
+          console.error('Native share failed, falling back to copy link', err);
+          handleCopyLink();
+        }
+      }
+    } else {
+      handleCopyLink();
     }
   };
 
@@ -163,6 +228,7 @@ export const ShareCardModal: React.FC<ShareCardModalProps> = ({
         ]);
         setCopiedImage(true);
         setTimeout(() => setCopiedImage(false), 2500);
+        trackCardShared('copy_image', { grave_id: grave.id, format, theme });
       } else {
         handleCopySnippet();
       }
@@ -198,6 +264,7 @@ export const ShareCardModal: React.FC<ShareCardModalProps> = ({
       }
       setCopiedSnippet(true);
       setTimeout(() => setCopiedSnippet(false), 2000);
+      trackCardShared('copy_snippet', { grave_id: grave.id, format, theme });
     } catch (err) {
       console.error('Copy text error:', err);
     }
@@ -219,25 +286,26 @@ export const ShareCardModal: React.FC<ShareCardModalProps> = ({
         initial={{ scale: 0.96, opacity: 0, y: 15 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.96, opacity: 0, y: 15 }}
-        className="relative w-full max-w-2xl bg-zinc-950 border border-zinc-800 rounded-2xl shadow-2xl p-4 sm:p-6 flex flex-col gap-5 z-10 max-h-[92vh] overflow-y-auto custom-scrollbar"
+        className="relative w-full max-w-2xl bg-zinc-950 border border-zinc-800 rounded-2xl shadow-2xl p-4 sm:p-6 flex flex-col gap-4 sm:gap-5 z-10 max-h-[92vh] sm:max-h-[88vh] overflow-y-auto custom-scrollbar overscroll-contain"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
         <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
-          <div className="flex items-center gap-2">
-            <span className="text-xl">🪦</span>
+          <div className="flex items-center gap-2.5">
+            <span className="text-2xl" role="img" aria-label="Tombstone">🪦</span>
             <div>
               <h2 className="text-base sm:text-lg font-bold font-serif text-white tracking-wider uppercase">
                 Memorial Share Card
               </h2>
               <p className="text-[11px] font-mono text-zinc-400">
-                Generate high-res commemorative card for social media
+                Gothic high-resolution card & viral social dispatch
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-full transition-colors cursor-pointer"
+            className="min-h-[44px] min-w-[44px] p-2 flex items-center justify-center text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-full transition-colors cursor-pointer"
+            aria-label="Close share dialog"
           >
             <X className="w-5 h-5" />
           </button>
@@ -407,12 +475,80 @@ export const ShareCardModal: React.FC<ShareCardModalProps> = ({
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+        {/* Social Share & Direct Dispatch Bar */}
+        <div className="space-y-3 pt-1">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-mono uppercase tracking-widest text-zinc-400 flex items-center gap-1.5">
+              <span>📢</span> Broadcast Funeral
+            </span>
+            {copiedLink && (
+              <span className="text-[11px] font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-800/80 px-2 py-0.5 rounded-md animate-fade-in flex items-center gap-1">
+                <Check className="w-3 h-3" /> Copied to Clipboard!
+              </span>
+            )}
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {/* Share to X (Twitter) */}
+            <button
+              onClick={handleShareTwitter}
+              className="min-h-[44px] px-3 py-2.5 rounded-xl border border-zinc-800 bg-zinc-900/90 hover:bg-black hover:border-zinc-600 text-zinc-200 hover:text-white text-xs font-mono flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm active:scale-95"
+              title="Share to X (Twitter)"
+            >
+              <svg className="w-3.5 h-3.5 fill-current shrink-0" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+              </svg>
+              <span>Share to X</span>
+            </button>
+
+            {/* Share to LinkedIn */}
+            <button
+              onClick={handleShareLinkedIn}
+              className="min-h-[44px] px-3 py-2.5 rounded-xl border border-zinc-800 bg-zinc-900/90 hover:bg-[#0a66c2]/20 hover:border-[#0a66c2]/60 text-zinc-200 hover:text-white text-xs font-mono flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm active:scale-95"
+              title="Share to LinkedIn"
+            >
+              <svg className="w-3.5 h-3.5 fill-current text-[#0a66c2] shrink-0" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 8.76a1.64 1.64 0 1 0-.02-3.28 1.64 1.64 0 0 0 .02 3.28m1.4 9.74v-8.37H5.06v8.37h2.8z" />
+              </svg>
+              <span>LinkedIn</span>
+            </button>
+
+            {/* Native Share (Web Share API) or Fallback */}
+            {canNativeShare ? (
+              <button
+                onClick={handleNativeShare}
+                className="min-h-[44px] px-3 py-2.5 rounded-xl border border-zinc-800 bg-zinc-900/90 hover:bg-zinc-800 hover:border-zinc-600 text-zinc-200 hover:text-white text-xs font-mono flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm active:scale-95"
+                title="Open native mobile/system share sheet"
+              >
+                <Share2 className="w-3.5 h-3.5 text-red-400 shrink-0" />
+                <span>Share...</span>
+              </button>
+            ) : null}
+
+            {/* Copy Link with Clear Tooltip/Toast */}
+            <button
+              onClick={handleCopyLink}
+              className={`min-h-[44px] px-3 py-2.5 rounded-xl border text-xs font-mono flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm active:scale-95 ${
+                !canNativeShare ? 'col-span-2' : ''
+              } ${
+                copiedLink 
+                  ? 'border-emerald-600 bg-emerald-950/70 text-emerald-300 font-bold' 
+                  : 'border-zinc-800 bg-zinc-900/90 hover:bg-zinc-800 hover:border-zinc-600 text-zinc-200 hover:text-white'
+              }`}
+              title="Copy direct link to this memorial"
+            >
+              {copiedLink ? <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" /> : <Link2 className="w-3.5 h-3.5 shrink-0" />}
+              <span>{copiedLink ? 'Copied Link!' : 'Copy Link'}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Media Generation & Download Buttons */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 pt-3 border-t border-zinc-800/80">
           <div className="flex items-center gap-2">
             <button
               onClick={handleCopySnippet}
-              className="px-3.5 py-2 rounded-xl border border-zinc-800 bg-zinc-900 text-zinc-300 hover:text-white hover:border-zinc-700 text-xs font-mono flex items-center gap-1.5 transition-colors cursor-pointer"
+              className="flex-1 sm:flex-none min-h-[44px] px-3.5 py-2.5 rounded-xl border border-zinc-800 bg-zinc-900 text-zinc-300 hover:text-white hover:border-zinc-700 text-xs font-mono flex items-center justify-center gap-2 transition-colors cursor-pointer"
             >
               {copiedSnippet ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
               <span>{copiedSnippet ? 'Snippet Copied!' : 'Copy Snippet'}</span>
@@ -421,7 +557,7 @@ export const ShareCardModal: React.FC<ShareCardModalProps> = ({
             <button
               onClick={handleCopyImage}
               disabled={isExporting}
-              className="px-3.5 py-2 rounded-xl border border-zinc-800 bg-zinc-900 text-zinc-300 hover:text-white hover:border-zinc-700 text-xs font-mono flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
+              className="flex-1 sm:flex-none min-h-[44px] px-3.5 py-2.5 rounded-xl border border-zinc-800 bg-zinc-900 text-zinc-300 hover:text-white hover:border-zinc-700 text-xs font-mono flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-50"
             >
               {copiedImage ? <Check className="w-4 h-4 text-emerald-400" /> : <ImageIcon className="w-4 h-4" />}
               <span>{copiedImage ? 'Image Copied!' : 'Copy Image'}</span>
@@ -431,10 +567,10 @@ export const ShareCardModal: React.FC<ShareCardModalProps> = ({
           <button
             onClick={handleDownload}
             disabled={isExporting}
-            className="px-5 py-2.5 bg-[#c53030] hover:bg-[#b91c1c] text-white rounded-xl text-xs font-mono uppercase tracking-wider font-bold flex items-center gap-2 shadow-lg shadow-red-950/40 transition-all cursor-pointer disabled:opacity-50 ml-auto"
+            className="min-h-[44px] px-5 py-2.5 bg-[#c53030] hover:bg-[#b91c1c] text-white rounded-xl text-xs font-mono uppercase tracking-wider font-bold flex items-center justify-center gap-2 shadow-lg shadow-red-950/40 transition-all cursor-pointer disabled:opacity-50"
           >
             {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-            <span>{isExporting ? 'Generating...' : 'Download PNG'}</span>
+            <span>{isExporting ? 'Generating (2x)...' : 'Download Card'}</span>
           </button>
         </div>
       </motion.div>

@@ -207,7 +207,7 @@ export const DispatchGraveModal: React.FC<DispatchGraveModalProps> = ({
         exit={{ scale: 0.95, opacity: 0, y: 15 }}
         transition={{ duration: 0.22, ease: "easeOut" }}
         onClick={e => e.stopPropagation()}
-        className="relative w-full max-w-xl bg-zinc-950 border border-zinc-800 rounded-2xl shadow-[0_0_60px_rgba(0,0,0,0.9)] p-5 sm:p-6 flex flex-col gap-4 text-left overflow-hidden ring-1 ring-white/5 max-h-[92vh] overflow-y-auto custom-scrollbar"
+        className="relative w-full max-w-xl bg-zinc-950 border border-zinc-800 rounded-2xl shadow-[0_0_60px_rgba(0,0,0,0.9)] p-4 sm:p-6 flex flex-col gap-4 text-left ring-1 ring-white/5 max-h-[92vh] sm:max-h-[88vh] overflow-y-auto overscroll-contain custom-scrollbar"
       >
         {/* Subtle top crimson glow */}
         <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[#c53030] to-transparent opacity-80" />
@@ -234,7 +234,7 @@ export const DispatchGraveModal: React.FC<DispatchGraveModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 text-zinc-400 hover:text-white hover:bg-zinc-900 rounded-lg transition-colors cursor-pointer border border-transparent hover:border-zinc-800"
+            className="min-h-[44px] min-w-[44px] p-2 flex items-center justify-center text-zinc-400 hover:text-white hover:bg-zinc-900 rounded-lg transition-colors cursor-pointer border border-transparent hover:border-zinc-800"
             aria-label="Close modal"
           >
             <X className="w-5 h-5" />

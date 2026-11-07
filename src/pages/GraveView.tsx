@@ -5,7 +5,7 @@ import { db } from '../firebase';
 import { Grave } from '../types';
 import { GraveModal } from '../components/GraveModal';
 import { Loader2 } from 'lucide-react';
-import { motion } from 'motion/react';
+import { trackPageView } from '../services/analyticsService';
 
 export const GraveView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -30,6 +30,40 @@ export const GraveView: React.FC = () => {
     };
     fetchGrave();
   }, [id]);
+
+  // Dynamically update document title & meta tags for social shareability
+  useEffect(() => {
+    if (!grave) return;
+
+    const previousTitle = document.title;
+    const newTitle = `${grave.project_name} | Dev Graveyard Memorial`;
+    document.title = newTitle;
+
+    const descContent = `Memorial for "${grave.project_name}". Cause of Death: ${grave.cause_of_death}. "${grave.lesson_learned || 'May its code rest in peace.'}" — Laid to rest in the Dev Graveyard.`;
+
+    const setOrCreateMeta = (attrName: string, attrVal: string, content: string) => {
+      let meta = document.querySelector(`meta[${attrName}="${attrVal}"]`);
+      if (!meta) {
+        meta = document.createElement('meta');
+        meta.setAttribute(attrName, attrVal);
+        document.head.appendChild(meta);
+      }
+      meta.setAttribute('content', content);
+      return meta;
+    };
+
+    const descMeta = setOrCreateMeta('name', 'description', descContent);
+    const ogTitleMeta = setOrCreateMeta('property', 'og:title', newTitle);
+    const ogDescMeta = setOrCreateMeta('property', 'og:description', descContent);
+    const twTitleMeta = setOrCreateMeta('name', 'twitter:title', newTitle);
+    const twDescMeta = setOrCreateMeta('name', 'twitter:description', descContent);
+
+    trackPageView(`/grave/${grave.id}`, newTitle);
+
+    return () => {
+      document.title = previousTitle;
+    };
+  }, [grave]);
 
   if (loading) {
     return (

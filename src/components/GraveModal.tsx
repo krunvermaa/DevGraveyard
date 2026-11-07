@@ -10,6 +10,8 @@ import { db } from '../firebase';
 import { collection, onSnapshot, getDoc, doc } from 'firebase/firestore';
 import { Link } from 'react-router-dom';
 import { ShareCardModal } from './ShareCardModal';
+import { AuthPromptModal } from './AuthPromptModal';
+import { trackRespectPaid } from '../services/analyticsService';
 
 interface GraveModalProps {
   grave: Grave;
@@ -37,6 +39,8 @@ export const GraveModal: React.FC<GraveModalProps> = ({ grave, onClose }) => {
   );
 
   const [showShareCard, setShowShareCard] = useState(false);
+  const [showAuthPrompt, setShowAuthPrompt] = useState(false);
+  const [authPromptAction, setAuthPromptAction] = useState('pay respects');
 
   useEffect(() => {
     // Preserve initial body styles
@@ -119,6 +123,11 @@ export const GraveModal: React.FC<GraveModalProps> = ({ grave, onClose }) => {
       e.preventDefault();
       return;
     }
+    if (!user) {
+      setAuthPromptAction('pay respects (Press F)');
+      setShowAuthPrompt(true);
+      return;
+    }
     handlePressF();
   };
 
@@ -140,6 +149,7 @@ export const GraveModal: React.FC<GraveModalProps> = ({ grave, onClose }) => {
       setRipsList(prev => [...prev, currentUserDisplayName]);
       try {
         await pressF(grave.id, currentUserDisplayName);
+        trackRespectPaid(grave.id);
       } catch (err) {
         console.error(err);
       }
@@ -230,6 +240,13 @@ export const GraveModal: React.FC<GraveModalProps> = ({ grave, onClose }) => {
              onClose={() => setShowShareCard(false)}
           />
         )}
+        {showAuthPrompt && (
+          <AuthPromptModal
+            isOpen={showAuthPrompt}
+            onClose={() => setShowAuthPrompt(false)}
+            actionText={authPromptAction}
+          />
+        )}
       </AnimatePresence>
 
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6" role="dialog" aria-modal="true">
@@ -250,13 +267,13 @@ export const GraveModal: React.FC<GraveModalProps> = ({ grave, onClose }) => {
         exit={{ scale: 0.96, opacity: 0, y: 12 }}
         transition={{ duration: 0.2, ease: "easeOut" }}
         style={{ transform: 'translate3d(0, 0, 0)', willChange: 'transform, opacity' }}
-        className="relative w-full max-w-lg bg-zinc-950/95 backdrop-blur-xl border border-zinc-800 rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.8)] p-5 md:p-6 flex flex-col items-center text-center gap-3 overflow-hidden selection:bg-[#c53030]/20 selection:text-[#c53030] ring-1 ring-white/5 max-h-[90vh] overflow-y-auto custom-scrollbar"
+        className="relative w-full max-w-lg bg-zinc-950/95 backdrop-blur-xl border border-zinc-800 rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.8)] p-4 sm:p-6 flex flex-col items-center text-center gap-3 selection:bg-[#c53030]/20 selection:text-[#c53030] ring-1 ring-white/5 max-h-[90vh] overflow-y-auto overscroll-contain custom-scrollbar"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Quick Close Button */}
+        {/* Quick Close Button with 44px Touch Target */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-1.5 text-zinc-400 hover:text-white hover:bg-white/10 rounded-full transition-colors z-20 border border-transparent hover:border-zinc-700/60 cursor-pointer"
+          className="min-h-[44px] min-w-[44px] p-2 flex items-center justify-center absolute top-2.5 right-2.5 sm:top-4 sm:right-4 text-zinc-400 hover:text-white hover:bg-white/10 rounded-full transition-colors z-20 border border-transparent hover:border-zinc-700/60 cursor-pointer"
           aria-label="Close modal"
         >
           <X className="w-5 h-5" />
@@ -523,7 +540,22 @@ export const GraveModal: React.FC<GraveModalProps> = ({ grave, onClose }) => {
               </button>
             </form>
           ) : (
-             <p className="text-xs text-zinc-500 font-mono text-center">Must be signed in to drop a eulogy.</p>
+            <button
+              type="button"
+              onClick={() => {
+                setAuthPromptAction('inscribe a eulogy');
+                setShowAuthPrompt(true);
+              }}
+              className="w-full p-2.5 bg-zinc-900/60 hover:bg-zinc-900/90 border border-dashed border-zinc-700/80 hover:border-[#c53030]/60 rounded-xl flex items-center justify-between text-xs font-mono text-zinc-400 hover:text-zinc-200 transition-all cursor-pointer group"
+            >
+              <span className="flex items-center gap-2">
+                <span className="text-[#c53030]">🗝️</span>
+                <span>Enter sanctuary to inscribe a eulogy...</span>
+              </span>
+              <span className="text-[10px] uppercase tracking-wider text-[#c53030] group-hover:underline">
+                Sign in &rarr;
+              </span>
+            </button>
           )}
 
         </div>

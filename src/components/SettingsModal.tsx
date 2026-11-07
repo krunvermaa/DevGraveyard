@@ -170,14 +170,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
       >
         <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-zinc-800 via-zinc-600 to-zinc-800" />
         
-        <div className="p-6 md:p-8 space-y-6 max-h-[85vh] overflow-y-auto custom-scrollbar">
+        <div className="p-5 sm:p-6 md:p-8 space-y-6 max-h-[85vh] overflow-y-auto overscroll-contain custom-scrollbar">
           <div className="flex justify-between items-center">
             <h2 className="text-2xl font-bold font-sans text-zinc-100 tracking-tight">
               Settings
             </h2>
             <button 
               onClick={onClose}
-              className="text-zinc-400 hover:text-white transition-colors rounded-full hover:bg-white/10 p-2 border border-transparent hover:border-zinc-700/60"
+              className="min-h-[44px] min-w-[44px] flex items-center justify-center text-zinc-400 hover:text-white transition-colors rounded-full hover:bg-white/10 p-2 border border-transparent hover:border-zinc-700/60 cursor-pointer"
               aria-label="Close settings"
             >
               <X className="w-5 h-5" />
